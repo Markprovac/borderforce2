@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bf-suite-v39-accueil-style-original';
+const CACHE_NAME = 'bf-suite-v40-sans-pull-refresh';
 const URLS_TO_CACHE = [
   './',
   './index.html',
