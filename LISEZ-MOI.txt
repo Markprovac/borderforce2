@@ -1,18 +1,18 @@
-REFONTE SESSION DE MISSION
+SUITE BORDERFORCE — ACCUEIL À VIGNETTES
 
-Arborescence à déposer sur GitHub :
+Cette version modifie uniquement l'accueil et le cache PWA nécessaire à sa mise à jour.
+Border Force et Compteur sont identiques à la version précédente.
+
+NOUVEL ACCUEIL
+1. Vignette rôle : chef de dispositif ou compteur.
+2. Vignette site : Breil-sur-Roya, La Turbie ou DSI Tende.
+3. Vignette date et horaires.
+4. Vignette récapitulative avant de commencer la mission.
+
+L'image images/fond-tech3.jpg reste en arrière-plan et doit rester présente dans le dépôt GitHub.
+
+FICHIERS À REMPLACER AU MINIMUM
 - index.html
-- manifest.json
 - service-worker.js
-- sw.js (copie de compatibilité)
-- borderforce/index.html
-- compteur/index.html
 
-Conserve également tes dossiers et fichiers existants : images, icônes, MRZ, etc.
-
-Fonctionnement :
-1. L'accueil demande le rôle, le site, la date et les horaires.
-2. Le rôle est mémorisé jusqu'à la remise à zéro de fin de mission.
-3. Border Force reçoit automatiquement site/date/horaires.
-4. Compteur reçoit automatiquement le site et affiche les compteurs adaptés.
-5. La remise à zéro termine la session et ramène au nouvel accueil.
+Le service worker passe au cache bf-suite-v38-accueil-vignettes afin que la PWA installée récupère le nouvel accueil.

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bf-suite-v37-mission';
+const CACHE_NAME = 'bf-suite-v38-accueil-vignettes';
 const URLS_TO_CACHE = [
   './',
   './index.html',
