@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bf-suite-v38-accueil-vignettes';
+const CACHE_NAME = 'bf-suite-v39-accueil-style-original';
 const URLS_TO_CACHE = [
   './',
   './index.html',
@@ -26,7 +26,6 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
 
-  // Navigation : essaie d'abord la version en ligne, puis utilise le cache hors connexion.
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
