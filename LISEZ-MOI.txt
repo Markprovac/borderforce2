@@ -1,0 +1,18 @@
+REFONTE SESSION DE MISSION
+
+Arborescence à déposer sur GitHub :
+- index.html
+- manifest.json
+- service-worker.js
+- sw.js (copie de compatibilité)
+- borderforce/index.html
+- compteur/index.html
+
+Conserve également tes dossiers et fichiers existants : images, icônes, MRZ, etc.
+
+Fonctionnement :
+1. L'accueil demande le rôle, le site, la date et les horaires.
+2. Le rôle est mémorisé jusqu'à la remise à zéro de fin de mission.
+3. Border Force reçoit automatiquement site/date/horaires.
+4. Compteur reçoit automatiquement le site et affiche les compteurs adaptés.
+5. La remise à zéro termine la session et ramène au nouvel accueil.
