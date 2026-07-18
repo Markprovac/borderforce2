@@ -1757,7 +1757,7 @@ button.whatsapp:hover {
 
       <div class="small-note" style="background:#edf5ff; border-left:4px solid #003366; padding:10px; border-radius:10px;">
         Tu as le tableau des services du jour ? Clique sur <strong>Importer tableau des services</strong> :
-        l'application peut te proposer les services trouvés dans le PDF et remplir automatiquement le site, la date, les horaires, les ESR et les tablettes.
+        l'application vérifie que le site, la date et les horaires correspondent à la mission en cours, puis importe les ESR et les tablettes.
         <br><br>
         Pour rechercher un ESR déjà connu, tape quelques lettres du nom ou le NIGEND. La flèche affiche la liste complète.
       </div>
@@ -4548,12 +4548,43 @@ function autoResize(el) {
     }
 
     function bfPdfChampsMissionRenseignes() {
-      const siteApp = (state.site || '').trim();
-      const dateApp = (state.date || '').trim();
-      const debutApp = bfPdfNormaliserHeure(state.heureDebut || '');
-      const finApp = bfPdfNormaliserHeure(state.heureFin || '');
+      // La session créée depuis l'accueil est la référence prioritaire.
+      // L'import PDF ne doit jamais pouvoir remplacer ces informations verrouillées.
+      const mission = window.BF_MISSION_SESSION || {};
+      const siteApp = (mission.site || state.site || '').trim();
+      const dateApp = (mission.date || state.date || '').trim();
+      const debutApp = bfPdfNormaliserHeure(mission.heureDebut || state.heureDebut || '');
+      const finApp = bfPdfNormaliserHeure(mission.heureFin || state.heureFin || '');
 
       return { siteApp, dateApp, debutApp, finApp };
+    }
+
+    function bfPdfResumeMissionVerrouillee() {
+      const { siteApp, dateApp, debutApp, finApp } = bfPdfChampsMissionRenseignes();
+      const site = bfPdfNormaliserSite(siteApp) || 'site non renseigné';
+      const date = dateApp ? dateApp.split('-').reverse().join('/') : 'date non renseignée';
+      const debut = debutApp ? debutApp.replace(':', 'h') : '--h--';
+      const fin = finApp ? finApp.replace(':', 'h') : '--h--';
+      return `${site} — ${date} — ${debut}/${fin}`;
+    }
+
+    function bfPdfAfficherServiceIncompatible(sections) {
+      const trouves = (sections || []).slice(0, 8).map(section => `• ${bfPdfSectionLabel(section)}`);
+      const suite = (sections || []).length > 8
+        ? `
+• … et ${(sections || []).length - 8} autre(s) service(s)`
+        : '';
+
+      alert(`SERVICE INCOMPATIBLE AVEC LA MISSION EN COURS
+
+Mission verrouillée :
+${bfPdfResumeMissionVerrouillee()}
+
+Aucun service du PDF ne correspond exactement au site, à la date et aux horaires de cette mission.
+Aucune donnée n’a été importée et la mission n’a pas été modifiée.${trouves.length ? `
+
+Services trouvés dans le PDF :
+${trouves.join('\n')}${suite}` : ''}`);
     }
 
     function bfPdfFiltrerSectionsSelonChamps(sections) {
@@ -4561,16 +4592,22 @@ function autoResize(el) {
       const siteNorm = bfPdfNormaliserSite(siteApp);
 
       return (sections || []).filter(section => {
+        if (!section) return false;
         if (siteNorm && section.site !== siteNorm) return false;
-        if (dateApp && section.dateIso && section.dateIso !== dateApp) return false;
+        if (dateApp && section.dateIso !== dateApp) return false;
 
-        // Si les deux heures sont renseignées, on filtre sur le créneau.
+        // Certains tableaux DSI Tende ne portent aucun horaire : dans ce cas,
+        // le site et la date restent les critères verrouillés de compatibilité.
+        if (siteNorm === 'DSI Tende' && !section.heureDebut && !section.heureFin) {
+          return true;
+        }
+
         if (debutApp && finApp) {
           if (!section.heureDebut || !section.heureFin) return false;
           return section.heureDebut === debutApp && section.heureFin === finApp;
         }
 
-        return true;
+        return false;
       });
     }
 
@@ -4584,7 +4621,10 @@ function autoResize(el) {
         return false;
       }
 
-      const remplirMission = options.remplirMission !== false;
+      // Une mission active est verrouillée : le PDF importe uniquement les ESR
+      // et les tablettes. Le site, la date et les horaires restent intacts.
+      const missionVerrouillee = !!(window.BF_MISSION_SESSION && window.BF_MISSION_SESSION.active);
+      const remplirMission = !missionVerrouillee && options.remplirMission !== false;
 
       if (remplirMission) {
         if (section.site) state.site = section.site;
@@ -4663,7 +4703,7 @@ function autoResize(el) {
         box.appendChild(title);
 
         const intro = document.createElement('p');
-        intro.textContent = message || 'Sélectionne ton service dans le tableau du jour. L’application remplira automatiquement le site, la date, les heures, les ESR et les tablettes détectées.';
+        intro.textContent = message || 'Sélectionne le service correspondant à la mission en cours. L’application importe les ESR et les tablettes sans modifier le site, la date ni les horaires verrouillés.';
         intro.style.margin = '0 0 12px 0';
         intro.style.color = '#444';
         intro.style.lineHeight = '1.35';
@@ -4753,29 +4793,37 @@ function autoResize(el) {
       }
 
       const { siteApp, dateApp, debutApp, finApp } = bfPdfChampsMissionRenseignes();
-      const champsRenseignes = !!(siteApp || dateApp || debutApp || finApp);
-      const sectionsCompatibles = bfPdfFiltrerSectionsSelonChamps(sections);
+      const missionComplete = !!(siteApp && dateApp && debutApp && finApp);
 
-      // Si les champs renseignés identifient un seul service, on importe directement.
-      if (champsRenseignes && sectionsCompatibles.length === 1) {
-        bfPdfImporterSectionPlanning(sectionsCompatibles[0], { remplirMission: true });
+      if (!missionComplete) {
+        alert(`Les informations verrouillées de la mission sont incomplètes.
+
+L’import PDF est annulé afin de ne pas mélanger deux services.`);
         return;
       }
 
-      let sectionsAProposer = sections;
-      let message = 'Sélectionne ton service dans le tableau du jour. L’application remplira automatiquement le site, la date, les heures, les ESR et les tablettes détectées.';
+      const sectionsCompatibles = bfPdfFiltrerSectionsSelonChamps(sections);
 
-      if (champsRenseignes && sectionsCompatibles.length > 1) {
-        sectionsAProposer = sectionsCompatibles;
-        message = 'Plusieurs services correspondent aux champs renseignés. Sélectionne celui à importer.';
-      } else if (champsRenseignes && sectionsCompatibles.length === 0) {
-        message = 'Aucun service ne correspond exactement aux champs renseignés. Sélectionne manuellement le service à importer dans la liste complète.';
+      // Un seul service correspond exactement : import direct, comme auparavant.
+      if (sectionsCompatibles.length === 1) {
+        bfPdfImporterSectionPlanning(sectionsCompatibles[0], { remplirMission: false });
+        return;
       }
 
-      const sectionChoisie = await bfPdfChoisirServicePlanning(sectionsAProposer, message);
-      if (!sectionChoisie) return;
+      // Plusieurs blocs strictement identiques : le chef choisit uniquement parmi eux.
+      if (sectionsCompatibles.length > 1) {
+        const sectionChoisie = await bfPdfChoisirServicePlanning(
+          sectionsCompatibles,
+          'Plusieurs services correspondent exactement à la mission verrouillée. Sélectionne celui dont tu veux importer les ESR et les tablettes.'
+        );
+        if (!sectionChoisie) return;
+        bfPdfImporterSectionPlanning(sectionChoisie, { remplirMission: false });
+        return;
+      }
 
-      bfPdfImporterSectionPlanning(sectionChoisie, { remplirMission: true });
+      // Aucun service compatible : blocage strict, sans possibilité de sélectionner
+      // un autre jour ou un autre créneau dans la liste complète.
+      bfPdfAfficherServiceIncompatible(sections);
     }
 
 
@@ -7894,7 +7942,7 @@ function cleanMrzText(){
       target: "#bfImporterEsrPdfBtn",
       fallbackTarget: "#esrPage .form-grid",
       titre: "Importer le tableau des services",
-      texte: "Si tu as le tableau des services du jour en PDF, appuie sur ce bouton. Si le site, la date et les horaires sont déjà renseignés, l'application importe directement le bon service. Sinon, elle te propose les services trouvés dans le PDF : sélectionne le tien et l'application remplit automatiquement le site, la date, les horaires, les ESR et les tablettes."
+      texte: "Si tu as le tableau des services du jour en PDF, appuie sur ce bouton. L'application vérifie que le site, la date et les horaires du service correspondent à la mission verrouillée. Si tout correspond, elle importe directement les ESR et les tablettes. En cas de différence, l'import est bloqué."
     },
     {
       page: "esrPage",
