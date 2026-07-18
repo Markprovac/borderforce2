@@ -1549,6 +1549,114 @@ button.whatsapp:hover {
   display: none !important;
 }
 
+
+/* =========================================================
+   SÉCURITÉ D'ENVOI DU COMPTE RENDU
+   Le statut repose sur une confirmation explicite de l'utilisateur.
+   ========================================================= */
+.bf-cr-status-card {
+  max-width: 560px;
+  margin: 0 auto 18px auto;
+  padding: 15px;
+  border: 2px solid #b7c8da;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 3px 8px rgba(0,0,0,.10);
+  text-align: left;
+}
+
+.bf-cr-status-card .bf-cr-status-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+
+.bf-cr-status-card .bf-cr-status-icon {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15em;
+  background: #edf2f7;
+  color: #4b5563;
+}
+
+.bf-cr-status-card .bf-cr-status-text {
+  flex: 1;
+}
+
+.bf-cr-status-card h3 {
+  margin: 0 0 4px 0;
+  text-align: left;
+  color: #2c3e50;
+  font-size: 1.03em;
+}
+
+.bf-cr-status-card p {
+  margin: 0;
+  color: #5d6b7a;
+  font-size: .88em;
+  line-height: 1.4;
+}
+
+.bf-cr-status-card .bf-cr-status-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 11px;
+}
+
+.bf-cr-status-card .bf-cr-status-actions button {
+  margin: 0;
+  min-height: 40px;
+  justify-content: center;
+  background: #003366;
+  color: #ffffff;
+}
+
+.bf-cr-status-card.status-non-envoye {
+  border-color: #d66b6b;
+  background: #fff5f5;
+}
+.bf-cr-status-card.status-non-envoye .bf-cr-status-icon {
+  background: #fde2e2;
+  color: #a12626;
+}
+
+.bf-cr-status-card.status-envoye {
+  border-color: #62b87a;
+  background: #f1fbf4;
+}
+.bf-cr-status-card.status-envoye .bf-cr-status-icon {
+  background: #dff4e5;
+  color: #176b31;
+}
+
+.bf-cr-status-card.status-modifie {
+  border-color: #e1a543;
+  background: #fff8e8;
+}
+.bf-cr-status-card.status-modifie .bf-cr-status-icon {
+  background: #ffedbd;
+  color: #855600;
+}
+
+.bf-cr-warning-details {
+  margin-top: 10px !important;
+  padding: 9px 10px;
+  border-radius: 9px;
+  background: rgba(255,255,255,.10);
+  font-size: .9em !important;
+}
+
+@media (max-width: 520px) {
+  .bf-cr-status-card .bf-cr-status-actions button {
+    width: 100%;
+  }
+}
+
 </style>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
@@ -2595,6 +2703,19 @@ button.whatsapp:hover {
       </div>
     </div>
 
+    <div id="bfCrStatusCard" class="bf-cr-status-card status-non-envoye" aria-live="polite">
+      <div class="bf-cr-status-head">
+        <span id="bfCrStatusIcon" class="bf-cr-status-icon"><i class="fas fa-paper-plane"></i></span>
+        <div class="bf-cr-status-text">
+          <h3 id="bfCrStatusTitle">Compte rendu non envoyé</h3>
+          <p id="bfCrStatusDetail">Aucun envoi n’a encore été confirmé pour cette mission.</p>
+        </div>
+      </div>
+      <div class="bf-cr-status-actions">
+        <button id="bfCrConfirmerEnvoiBtn" type="button"><i class="fas fa-check"></i> Confirmer l’envoi</button>
+      </div>
+    </div>
+
     <div style="text-align:center; margin-bottom: 20px;">
       <button id="generateBtn" class="blue" style="padding:12px 24px; font-size:1.1em;">Générer compte rendu</button>
       <button id="copyBtn" class="green" style="padding:12px 24px; font-size:1.1em;">Copier dans le presse-papiers</button>
@@ -2651,10 +2772,287 @@ button.whatsapp:hover {
   </div>
 </div>
 
+<!-- Confirmation utilisateur après copie ou partage du compte rendu -->
+<div id="popupCrEnvoi" class="popup-overlay" role="dialog" aria-modal="true" aria-labelledby="popupCrEnvoiTitre">
+  <div class="popup-box">
+    <h3 id="popupCrEnvoiTitre"><i class="fas fa-paper-plane"></i> Compte rendu envoyé ?</h3>
+    <p id="popupCrEnvoiMessage">As-tu bien envoyé le compte rendu ?</p>
+    <p style="font-size:.86em; color:#dbeafe;">L’application peut détecter l’ouverture ou la copie, mais pas la réception du message. Cette confirmation est donc manuelle.</p>
+    <div class="popup-buttons">
+      <button id="bfCrEnvoiOuiBtn" type="button" class="popup-btn call">Oui, envoyé</button>
+      <button id="bfCrEnvoiNonBtn" type="button" class="popup-btn cancel">Non, pas encore</button>
+    </div>
+  </div>
+</div>
+
+<!-- Avertissement avant fin de mission si le CR n'est pas confirmé ou a été modifié -->
+<div id="popupCrAvertissementFin" class="popup-overlay" role="dialog" aria-modal="true" aria-labelledby="popupCrAvertissementFinTitre">
+  <div class="popup-box">
+    <h3 id="popupCrAvertissementFinTitre"><i class="fas fa-triangle-exclamation"></i> Compte rendu à vérifier</h3>
+    <p id="popupCrAvertissementFinMessage">Le compte rendu n’est pas indiqué comme envoyé.</p>
+    <p id="popupCrAvertissementFinDetail" class="bf-cr-warning-details"></p>
+    <div class="popup-buttons">
+      <button id="bfCrRetourCompteRenduBtn" type="button" class="popup-btn cancel">Retour au compte rendu</button>
+      <button id="bfCrTerminerQuandMemeBtn" type="button" class="popup-btn call">Terminer quand même</button>
+    </div>
+  </div>
+</div>
+
 <!-- Bouton Accueil flottant : visible uniquement hors page d'accueil -->
 <button id="floatingHomeBtn" type="button" onclick="bfFloatingHomeClick(event)" aria-label="Retour accueil" title="Accueil">
   <i class="fas fa-home"></i>
 </button>
+
+<script>
+/* Sécurité d'envoi du compte rendu.
+   L'application ne peut pas lire l'état d'envoi de WhatsApp : elle conserve
+   donc une confirmation explicite de l'utilisateur et la signature des données
+   utilisées pour le compte rendu confirmé. */
+(() => {
+  const STATUS_KEY = 'bf_cr_envoi_status_v1';
+  const PENDING_KEY = 'bf_cr_envoi_pending_v1';
+  let pendingMethod = '';
+  let whatsappDepartureObserved = false;
+  let currentConfirmMethod = '';
+
+  function getMissionId() {
+    const mission = window.BF_MISSION_SESSION || {};
+    return [
+      mission.createdAt || '',
+      mission.site || '',
+      mission.date || '',
+      mission.heureDebut || '',
+      mission.heureFin || ''
+    ].join('|');
+  }
+
+  function readStatus() {
+    try {
+      const raw = localStorage.getItem(STATUS_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (!parsed || parsed.missionId !== getMissionId()) return null;
+      return parsed;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function writeStatus(status) {
+    localStorage.setItem(STATUS_KEY, JSON.stringify(status));
+  }
+
+  function currentSignature() {
+    try {
+      return typeof window.bfCrGetCurrentReportSignature === 'function'
+        ? window.bfCrGetCurrentReportSignature()
+        : '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  function formatTime(timestamp) {
+    if (!timestamp) return '';
+    try {
+      return new Intl.DateTimeFormat('fr-FR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      }).format(new Date(timestamp));
+    } catch (_) {
+      return new Date(timestamp).toLocaleString('fr-FR');
+    }
+  }
+
+  function getEffectiveState() {
+    const status = readStatus();
+    if (!status) return { state: 'non_envoye', status: null };
+
+    const signature = currentSignature();
+    if (status.state === 'envoye' && status.signature && signature && status.signature !== signature) {
+      status.state = 'modifie';
+      status.modifiedAt = Date.now();
+      writeStatus(status);
+    }
+    return { state: status.state || 'non_envoye', status };
+  }
+
+  function renderStatus() {
+    const card = document.getElementById('bfCrStatusCard');
+    const icon = document.getElementById('bfCrStatusIcon');
+    const title = document.getElementById('bfCrStatusTitle');
+    const detail = document.getElementById('bfCrStatusDetail');
+    if (!card || !icon || !title || !detail) return;
+
+    const result = getEffectiveState();
+    card.classList.remove('status-non-envoye', 'status-envoye', 'status-modifie');
+
+    if (result.state === 'envoye') {
+      card.classList.add('status-envoye');
+      icon.innerHTML = '<i class="fas fa-circle-check"></i>';
+      title.textContent = 'Compte rendu envoyé';
+      detail.textContent = `Envoi confirmé par l’utilisateur le ${formatTime(result.status.sentAt)}${result.status.method ? ` — ${result.status.method}` : ''}.`;
+      return;
+    }
+
+    if (result.state === 'modifie') {
+      card.classList.add('status-modifie');
+      icon.innerHTML = '<i class="fas fa-pen-to-square"></i>';
+      title.textContent = 'Compte rendu modifié depuis le dernier envoi';
+      detail.textContent = `Dernier envoi confirmé le ${formatTime(result.status.sentAt)}. La version actuelle doit être renvoyée ou confirmée.`;
+      return;
+    }
+
+    card.classList.add('status-non-envoye');
+    icon.innerHTML = '<i class="fas fa-paper-plane"></i>';
+    title.textContent = 'Compte rendu non envoyé';
+    detail.textContent = 'Aucun envoi n’a encore été confirmé pour cette mission.';
+  }
+
+  function closeSendPopup() {
+    const popup = document.getElementById('popupCrEnvoi');
+    if (popup) popup.style.display = 'none';
+    currentConfirmMethod = '';
+  }
+
+  function askForConfirmation(method) {
+    currentConfirmMethod = method || 'Confirmation manuelle';
+    const popup = document.getElementById('popupCrEnvoi');
+    const message = document.getElementById('popupCrEnvoiMessage');
+    if (message) {
+      message.textContent = currentConfirmMethod === 'WhatsApp'
+        ? 'Tu es revenu dans Border Force. As-tu bien envoyé le compte rendu dans WhatsApp ?'
+        : currentConfirmMethod === 'Copie'
+          ? 'Le compte rendu a été copié. L’as-tu ensuite bien envoyé à son destinataire ?'
+          : 'As-tu bien envoyé la version actuelle du compte rendu ?';
+    }
+    if (popup) popup.style.display = 'flex';
+  }
+
+  function confirmSent() {
+    const signature = currentSignature();
+    writeStatus({
+      missionId: getMissionId(),
+      state: 'envoye',
+      signature,
+      sentAt: Date.now(),
+      method: currentConfirmMethod || 'Confirmation manuelle'
+    });
+    sessionStorage.removeItem(PENDING_KEY);
+    pendingMethod = '';
+    whatsappDepartureObserved = false;
+    closeSendPopup();
+    renderStatus();
+  }
+
+  function prepareAfterShare(method) {
+    pendingMethod = method || 'WhatsApp';
+    whatsappDepartureObserved = false;
+    try {
+      sessionStorage.setItem(PENDING_KEY, JSON.stringify({
+        method: pendingMethod,
+        startedAt: Date.now(),
+        missionId: getMissionId()
+      }));
+    } catch (_) {}
+  }
+
+  function maybeAskAfterReturn(force = false) {
+    let pending = null;
+    try {
+      const raw = sessionStorage.getItem(PENDING_KEY);
+      pending = raw ? JSON.parse(raw) : null;
+    } catch (_) {}
+    if (!pending || pending.missionId !== getMissionId()) return;
+
+    const elapsed = Date.now() - (pending.startedAt || 0);
+    if (!force && !whatsappDepartureObserved && elapsed < 2500) return;
+
+    sessionStorage.removeItem(PENDING_KEY);
+    pendingMethod = pending.method || 'WhatsApp';
+    askForConfirmation(pendingMethod);
+  }
+
+  window.bfCrAfficherStatut = renderStatus;
+  window.bfCrDemanderConfirmationEnvoi = askForConfirmation;
+  window.bfCrPreparerConfirmationApresPartage = prepareAfterShare;
+  window.bfCrVerifierModificationDepuisEnvoi = function(signature) {
+    const status = readStatus();
+    if (!status || status.state !== 'envoye' || !status.signature || !signature) {
+      renderStatus();
+      return;
+    }
+    if (status.signature !== signature) {
+      status.state = 'modifie';
+      status.modifiedAt = Date.now();
+      writeStatus(status);
+    }
+    renderStatus();
+  };
+
+  window.bfCrDoitAvertirFinMission = function() {
+    return getEffectiveState().state !== 'envoye';
+  };
+
+  window.bfCrAfficherAvertissementFinMission = function() {
+    const result = getEffectiveState();
+    const popup = document.getElementById('popupCrAvertissementFin');
+    const message = document.getElementById('popupCrAvertissementFinMessage');
+    const detail = document.getElementById('popupCrAvertissementFinDetail');
+
+    if (result.state === 'modifie') {
+      if (message) message.textContent = 'Le compte rendu a été modifié depuis le dernier envoi confirmé.';
+      if (detail) detail.textContent = 'La version actuelle n’est pas indiquée comme renvoyée. Vérifie son envoi avant d’effacer les données.';
+    } else {
+      if (message) message.textContent = 'Le compte rendu n’est pas indiqué comme envoyé.';
+      if (detail) detail.textContent = 'Aucun envoi n’a été confirmé pour la mission en cours.';
+    }
+
+    if (popup) popup.style.display = 'flex';
+  };
+
+  window.bfCrNettoyerStatutMission = function() {
+    localStorage.removeItem(STATUS_KEY);
+    sessionStorage.removeItem(PENDING_KEY);
+  };
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      whatsappDepartureObserved = true;
+    } else {
+      setTimeout(() => maybeAskAfterReturn(false), 250);
+    }
+  });
+
+  window.addEventListener('focus', () => {
+    setTimeout(() => maybeAskAfterReturn(false), 300);
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('bfCrConfirmerEnvoiBtn')?.addEventListener('click', () => askForConfirmation('Confirmation manuelle'));
+    document.getElementById('bfCrEnvoiOuiBtn')?.addEventListener('click', confirmSent);
+    document.getElementById('bfCrEnvoiNonBtn')?.addEventListener('click', closeSendPopup);
+
+    document.getElementById('bfCrRetourCompteRenduBtn')?.addEventListener('click', () => {
+      const popup = document.getElementById('popupCrAvertissementFin');
+      if (popup) popup.style.display = 'none';
+      if (typeof showPage === 'function') showPage('generatePage');
+    });
+
+    document.getElementById('bfCrTerminerQuandMemeBtn')?.addEventListener('click', () => {
+      const warning = document.getElementById('popupCrAvertissementFin');
+      if (warning) warning.style.display = 'none';
+      const finish = document.getElementById('popupFinMission');
+      if (finish) finish.style.display = 'flex';
+    });
+
+    // Laisse d'abord Border Force charger l'état sauvegardé de la mission.
+    setTimeout(() => {
+      renderStatus();
+      maybeAskAfterReturn(true);
+    }, 800);
+  });
+})();
+</script>
 
 <script>
 // Navigation entre les pages
@@ -2739,8 +3137,38 @@ button.whatsapp:hover {
   "DSI Tende": ["train", "bus", "vl", "pl"]
 };
 
+    function bfCrConstruireSignatureDonnees() {
+      return JSON.stringify({
+        site: state.site || '',
+        date: state.date || '',
+        heureDebut: state.heureDebut || '',
+        heureFin: state.heureFin || '',
+        esrList: state.esrList || [],
+        cameraNum: state.cameraNum || '',
+        cameraESR: state.cameraESR || '',
+        tablette1Num: state.tablette1Num || '',
+        tablette1ESR: state.tablette1ESR || '',
+        tablette2Num: state.tablette2Num || '',
+        tablette2ESR: state.tablette2ESR || '',
+        vehiculeService: state.vehiculeService || '',
+        vehicules: state.vehicules || {},
+        cv: state.cv || {},
+        cf: state.cf || {},
+        esiList: state.esiList || [],
+        passeurList: state.passeurList || [],
+        observations: state.observations || '',
+        deroulement: state.deroulement || '',
+        pulsar: state.pulsar || ''
+      });
+    }
+
+    window.bfCrGetCurrentReportSignature = bfCrConstruireSignatureDonnees;
+
     let saveTimeout = null;
     function debounceSave() {
+      if (typeof window.bfCrVerifierModificationDepuisEnvoi === 'function') {
+        window.bfCrVerifierModificationDepuisEnvoi(bfCrConstruireSignatureDonnees());
+      }
       if(saveTimeout) clearTimeout(saveTimeout);
       saveTimeout = setTimeout(() => {
         saveToStorage();
@@ -2749,6 +3177,9 @@ button.whatsapp:hover {
     
     function saveToStorage() {
       localStorage.setItem('borderforce', JSON.stringify(state));
+      if (typeof window.bfCrVerifierModificationDepuisEnvoi === 'function') {
+        window.bfCrVerifierModificationDepuisEnvoi(bfCrConstruireSignatureDonnees());
+      }
     }
     
     function loadFromStorage() {
@@ -3933,7 +4364,12 @@ function autoResize(el) {
       }
 
       try {
-        navigator.clipboard.writeText(textarea.value).then(()=> alert('Compte rendu copié dans le presse-papiers !')).catch(()=> fallbackCopy(textarea));
+        navigator.clipboard.writeText(textarea.value).then(() => {
+          alert('Compte rendu copié dans le presse-papiers !');
+          if (typeof window.bfCrDemanderConfirmationEnvoi === 'function') {
+            window.bfCrDemanderConfirmationEnvoi('Copie');
+          }
+        }).catch(() => fallbackCopy(textarea));
       } catch {
         fallbackCopy(textarea);
       }
@@ -3944,6 +4380,9 @@ function autoResize(el) {
         textarea.select();
         document.execCommand('copy');
         alert('Compte rendu copié dans le presse-papiers !');
+        if (typeof window.bfCrDemanderConfirmationEnvoi === 'function') {
+          window.bfCrDemanderConfirmationEnvoi('Copie');
+        }
       } catch {
         alert('Impossible de copier. Sélectionnez manuellement le texte.');
       }
@@ -4027,6 +4466,9 @@ function autoResize(el) {
       // Ouvre WhatsApp avec le compte rendu déjà placé dans la zone de message.
       // L'utilisateur choisit le destinataire, vérifie le texte puis appuie sur Envoyer.
       // On garde aussi la copie presse-papiers en sécurité au cas où WhatsApp ignore le texte prérempli.
+      if (typeof window.bfCrPreparerConfirmationApresPartage === 'function') {
+        window.bfCrPreparerConfirmationApresPartage('WhatsApp');
+      }
       const messageWhatsApp = encodeURIComponent(cr);
       window.location.href = 'whatsapp://send?text=' + messageWhatsApp;
     }
@@ -6732,6 +7174,12 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 // Fin de mission : conserve le premier ESR comme auparavant.
 function resetData() {
+  if (typeof window.bfCrDoitAvertirFinMission === 'function' && window.bfCrDoitAvertirFinMission()) {
+    if (typeof window.bfCrAfficherAvertissementFinMission === 'function') {
+      window.bfCrAfficherAvertissementFinMission();
+      return;
+    }
+  }
   const popup = document.getElementById('popupFinMission');
   if (popup) popup.style.display = 'flex';
 }
@@ -6800,6 +7248,9 @@ function confirmerFinMissionBorderForce() {
     localStorage.setItem('borderforce', JSON.stringify(newState));
     localStorage.removeItem('siteSelection');
     localStorage.removeItem('bf_mission_session_v1');
+    if (typeof window.bfCrNettoyerStatutMission === 'function') {
+      window.bfCrNettoyerStatutMission();
+    }
     alert("Mission terminée. Les données ont été effacées et le premier ESR a été conservé.");
     location.replace('../index.html');
 }
