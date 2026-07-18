@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bf-suite-v45-deroulement-auto-demarrage';
+const CACHE_NAME = 'bf-suite-v46-alertes-bleues';
 const URLS_TO_CACHE = [
   './',
   './index.html',
