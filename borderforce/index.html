@@ -1612,20 +1612,6 @@ button.whatsapp:hover {
 <!-- Page d'accueil avec nouvelle présentation -->
 <div id="homePage" class="home-page">
   <h1 class="home-title">
-    <button onclick="window.location.href='../index.html'" style="
-      float:left;
-      margin-right:10px;
-      background:white;
-      color:#003366;
-      border:none;
-      border-radius:6px;
-      padding:4px 8px;
-      font-size:0.9em;
-      cursor:pointer;
-      box-shadow:0 2px 5px rgba(0,0,0,0.2);
-    ">
-      🏠 Accueil
-    </button>
     CR BORDERFORCE<br>
     <span class="sous-titre">LIMES Breil-La Turbie-DSI Tende</span>
   </h1>
@@ -2613,7 +2599,7 @@ button.whatsapp:hover {
       <button id="generateBtn" class="blue" style="padding:12px 24px; font-size:1.1em;">Générer compte rendu</button>
       <button id="copyBtn" class="green" style="padding:12px 24px; font-size:1.1em;">Copier dans le presse-papiers</button>
       <button id="whatsappBtn" class="whatsapp" type="button" style="padding:12px 24px; font-size:1.1em;">💬 WhatsApp</button>
-      <button id="resetBtn" class="red" style="font-size:1.1em;">Effacer les données sauvegardées</button>
+      <button id="resetBtn" class="red" style="font-size:1.1em;"><i class="fas fa-flag-checkered"></i> Fin de mission</button>
     </div>
 
     <h3>Compte rendu généré :</h3>
@@ -2648,6 +2634,20 @@ button.whatsapp:hover {
     <div id="qr-reader" style="width:100%;"></div>
     <div id="scanLog" style="max-height:120px; overflow:auto; margin-top:10px; font-size:0.9em; background:#f0f0f0; padding:6px;"></div>
     <button onclick="closeQrModal()" style="margin-top:10px; padding:8px 16px;">Fermer</button>
+  </div>
+</div>
+
+
+<!-- Confirmation de fin de mission -->
+<div id="popupFinMission" class="popup-overlay" role="dialog" aria-modal="true" aria-labelledby="popupFinMissionTitre">
+  <div class="popup-box">
+    <h3 id="popupFinMissionTitre"><i class="fas fa-flag-checkered"></i> Fin de mission</h3>
+    <p>Confirmer la fin de mission et effacer les données enregistrées ?</p>
+    <p style="font-size:.9em; color:#dbeafe;"><strong>Le premier ESR sera conservé</strong>, comme auparavant.</p>
+    <div class="popup-buttons">
+      <button id="bfFinMissionOuiBtn" type="button" class="popup-btn call">Oui, terminer</button>
+      <button id="bfFinMissionAnnulerBtn" type="button" class="popup-btn cancel">Annuler</button>
+    </div>
   </div>
 </div>
 
@@ -6682,9 +6682,20 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("passeurAgeNum").addEventListener("input", majPasseurStatut);
   document.getElementById("passeurSexe").addEventListener("change", majPasseurStatut);
 });
-// Reset qui conserve le premier ESR mais réinitialise aussi le site
+// Fin de mission : conserve le premier ESR comme auparavant.
 function resetData() {
-  if (confirm("Voulez-vous terminer la mission et effacer toutes les données sauf le premier ESR ?")) {
+  const popup = document.getElementById('popupFinMission');
+  if (popup) popup.style.display = 'flex';
+}
+
+function annulerFinMissionBorderForce() {
+  const popup = document.getElementById('popupFinMission');
+  if (popup) popup.style.display = 'none';
+}
+
+function confirmerFinMissionBorderForce() {
+  const popup = document.getElementById('popupFinMission');
+  if (popup) popup.style.display = 'none';
     
     // Charger l'état actuel depuis le localStorage
     const data = localStorage.getItem('borderforce');
@@ -6743,8 +6754,12 @@ function resetData() {
     localStorage.removeItem('bf_mission_session_v1');
     alert("Mission terminée. Les données ont été effacées et le premier ESR a été conservé.");
     location.replace('../index.html');
-  }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('bfFinMissionOuiBtn')?.addEventListener('click', confirmerFinMissionBorderForce);
+  document.getElementById('bfFinMissionAnnulerBtn')?.addEventListener('click', annulerFinMissionBorderForce);
+});
       
 </script>
 <script>
