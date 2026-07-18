@@ -1,15 +1,8 @@
-SUITE BORDERFORCE — FIN DE MISSION
+Suite BorderForce — sécurité d'envoi du compte rendu
 
-Fichiers à remplacer :
+À remplacer sur GitHub :
 - borderforce/index.html
-- compteur/index.html
 - service-worker.js
 
-Modifications :
-- suppression du bouton Accueil situé dans le bandeau supérieur de Border Force et Compteur ;
-- conservation du bouton Accueil flottant sans modification ;
-- bouton « Fin de mission » dans les deux modules ;
-- confirmation personnalisée « Oui, terminer / Annuler » ;
-- Border Force conserve le premier ESR ;
-- Compteur conserve l'identité de l'ESR ;
-- la session commune est supprimée uniquement après confirmation.
+Fonctions ajoutées : statut non envoyé / envoyé / modifié, confirmation après copie ou retour de WhatsApp, avertissement avant fin de mission.
+La vérification d'envoi reste une confirmation manuelle : une page web ne peut pas connaître la réception réelle dans WhatsApp.

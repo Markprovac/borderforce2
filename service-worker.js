@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bf-suite-v43-import-pdf-verrouille';
+const CACHE_NAME = 'bf-suite-v44-securite-envoi-cr';
 const URLS_TO_CACHE = [
   './',
   './index.html',
