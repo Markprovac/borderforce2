@@ -1662,6 +1662,194 @@ button.whatsapp:hover {
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="trains-trenitalia-roya.js?v=3"></script>
+
+<style id="appDialogStyles">
+/* === Fenêtres internes : remplacent les dialogues natifs du navigateur === */
+.app-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, .62);
+}
+.app-dialog-box {
+  width: min(430px, 100%);
+  max-height: min(82vh, 720px);
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 24px 22px 20px;
+  border-radius: 18px;
+  background: #0b1936;
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .45);
+  border: 1px solid rgba(255,255,255,.12);
+}
+.app-dialog-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin: 0 0 16px;
+  color: #ffcc00;
+  font-size: 1.25rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+.app-dialog-message {
+  margin: 0;
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1.48;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.app-dialog-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 22px;
+}
+.app-dialog-actions button {
+  flex: 1 1 0;
+  justify-content: center;
+  min-height: 50px;
+  margin: 0;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 800;
+}
+.app-dialog-confirm { background: #1769aa; }
+.app-dialog-confirm.danger { background: #cf3a2d; }
+.app-dialog-cancel { background: #596579; }
+.app-dialog-actions.single .app-dialog-confirm {
+  max-width: 220px;
+  margin: 0 auto;
+}
+@media (max-width: 420px) {
+  .app-dialog-overlay { padding: 8px; }
+  .app-dialog-box { padding: 22px 14px 18px; border-radius: 16px; }
+  .app-dialog-actions { gap: 8px; }
+  .app-dialog-actions button { padding: 9px 8px; }
+}
+</style>
+<script id="appDialogScript">
+(() => {
+  const queue = [];
+  let active = null;
+  let overlay = null;
+
+  function ensureDialog() {
+    if (overlay && document.documentElement.contains(overlay)) return overlay;
+
+    overlay = document.createElement('div');
+    overlay.id = 'appDialogOverlay';
+    overlay.className = 'app-dialog-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.innerHTML = `
+      <div class="app-dialog-box">
+        <h3 class="app-dialog-title">
+          <i id="appDialogIcon" class="fas fa-circle-info" aria-hidden="true"></i>
+          <span id="appDialogTitle">Information</span>
+        </h3>
+        <p id="appDialogMessage" class="app-dialog-message"></p>
+        <div id="appDialogActions" class="app-dialog-actions">
+          <button id="appDialogConfirm" type="button" class="app-dialog-confirm">OK</button>
+          <button id="appDialogCancel" type="button" class="app-dialog-cancel">Annuler</button>
+        </div>
+      </div>`;
+
+    (document.body || document.documentElement).appendChild(overlay);
+
+    overlay.querySelector('#appDialogConfirm').addEventListener('click', () => closeDialog(true));
+    overlay.querySelector('#appDialogCancel').addEventListener('click', () => closeDialog(false));
+    return overlay;
+  }
+
+  function showNext() {
+    if (active || !queue.length) return;
+    active = queue.shift();
+    const root = ensureDialog();
+    const title = root.querySelector('#appDialogTitle');
+    const icon = root.querySelector('#appDialogIcon');
+    const message = root.querySelector('#appDialogMessage');
+    const actions = root.querySelector('#appDialogActions');
+    const ok = root.querySelector('#appDialogConfirm');
+    const cancel = root.querySelector('#appDialogCancel');
+
+    title.textContent = active.title;
+    icon.className = `fas ${active.icon}`;
+    message.textContent = String(active.message ?? '');
+    ok.textContent = active.confirmText;
+    ok.className = `app-dialog-confirm${active.danger ? ' danger' : ''}`;
+    cancel.textContent = active.cancelText;
+    cancel.style.display = active.kind === 'confirm' ? 'inline-flex' : 'none';
+    actions.classList.toggle('single', active.kind !== 'confirm');
+
+    root.style.display = 'flex';
+    document.body?.classList.add('app-dialog-open');
+    setTimeout(() => ok.focus(), 30);
+  }
+
+  function closeDialog(result) {
+    if (!active) return;
+    const item = active;
+    active = null;
+    if (overlay) overlay.style.display = 'none';
+    document.body?.classList.remove('app-dialog-open');
+    item.resolve(result);
+    setTimeout(showNext, 0);
+  }
+
+  window.addEventListener('keydown', event => {
+    if (!active || event.key !== 'Escape') return;
+    event.preventDefault();
+    closeDialog(active.kind === 'confirm' ? false : true);
+  });
+
+  window.appAlert = function(message, options = {}) {
+    if (typeof options === 'string') options = { title: options };
+    return new Promise(resolve => {
+      queue.push({
+        kind: 'alert',
+        message,
+        title: options.title || 'Information',
+        icon: options.icon || 'fa-circle-info',
+        confirmText: options.confirmText || 'OK',
+        cancelText: '',
+        danger: !!options.danger,
+        resolve
+      });
+      showNext();
+    });
+  };
+
+  window.appConfirm = function(message, options = {}) {
+    if (typeof options === 'string') options = { title: options };
+    return new Promise(resolve => {
+      queue.push({
+        kind: 'confirm',
+        message,
+        title: options.title || 'Confirmation',
+        icon: options.icon || 'fa-circle-question',
+        confirmText: options.confirmText || 'Oui',
+        cancelText: options.cancelText || 'Annuler',
+        danger: options.danger !== false,
+        resolve
+      });
+      showNext();
+    });
+  };
+})();
+</script>
+
 </head>
 <body>
 <script>
@@ -3309,8 +3497,8 @@ if (resumeEl) {
         const delBtn = document.createElement('button');
         delBtn.textContent = 'Supprimer';
         delBtn.className = 'red';
-        delBtn.onclick = () => {
-          if(confirm(`Supprimer ${esr.grade} ${esr.nom} ?`)) {
+        delBtn.onclick = async () => {
+          if (await appConfirm(`Supprimer ${esr.grade} ${esr.nom} ?`, { title: 'Supprimer un ESR', confirmText: 'Oui, supprimer' })) {
             state.esrList.splice(i,1);
             populateEsrSelects();
             renderEsrList();
@@ -3420,7 +3608,7 @@ if (resumeEl) {
       const nigend = document.getElementById('esrNigend').value.trim();
       const crt = document.getElementById('esrCRT').value.trim();
       if(!grade || !nom || !nigend || !crt) {
-        alert('Merci de remplir tous les champs ESR.');
+        appAlert('Merci de remplir tous les champs ESR.');
         return;
       }
 
@@ -3515,7 +3703,7 @@ function addManualCv(type){
   const input = document.getElementById(type+'CvManual');
   if(!input) return;
   const val = parseInt(input.value, 10);
-  if (!(val > 0)) { alert('Veuillez saisir un nombre entier > 0.'); input.focus(); input.select(); return; }
+  if (!(val > 0)) { appAlert('Veuillez saisir un nombre entier > 0.'); input.focus(); input.select(); return; }
   state.cv[type] += val;
   updateUI(); debounceSave();
   input.value = '';          // ← vide
@@ -3528,7 +3716,7 @@ function addManualCf(type){
   const input = document.getElementById(type+'CfManual');
   if(!input) return;
   const val = parseInt(input.value, 10);
-  if (!(val > 0)) { alert('Veuillez saisir un nombre entier > 0.'); input.focus(); input.select(); return; }
+  if (!(val > 0)) { appAlert('Veuillez saisir un nombre entier > 0.'); input.focus(); input.select(); return; }
   state.cf[type] += val;
   updateUI(); debounceSave();
   input.value = '';
@@ -3657,8 +3845,8 @@ function renderEsiList() {
     const delBtn = document.createElement('button');
     delBtn.textContent = 'Supprimer';
     delBtn.className = 'red';
-    delBtn.onclick = () => {
-      if (confirm("Supprimer cet ESI ?")) {
+    delBtn.onclick = async () => {
+      if (await appConfirm("Supprimer cet ESI ?", { title: "Supprimer un ESI", confirmText: "Oui, supprimer" })) {
         state.esiList.splice(i, 1);
         // On reconstruit les lignes auto (ESI/PASSEUR) dans le déroulement
         if (typeof rebuildDeroulementAuto === 'function') {
@@ -3793,14 +3981,14 @@ function addEsi() {
   const situation = document.getElementById('esiSituation').value;
   const lieu = document.getElementById('esiLieu').value.trim();
   const suitesInfo = bf_getSuites('esi');
-if (!suitesInfo.ok) { alert(suitesInfo.msg); return; }
+if (!suitesInfo.ok) { appAlert(suitesInfo.msg); return; }
 const suites = suitesInfo.suites;
 
   const dob = document.getElementById('esiDob').value.trim(); // date de naissance
 const event = document.getElementById('esiEvent')?.value.trim() || "";
 
 if (!age || !sexe || !ageNum || !nationalite || !situation || !lieu) {
-  alert('Merci de remplir tous les champs ESI.');
+  appAlert('Merci de remplir tous les champs ESI.');
   return;
 }
 
@@ -3941,8 +4129,8 @@ function renderPasseurList() {
     const delBtn = document.createElement('button');
     delBtn.textContent = 'Supprimer';
     delBtn.className = 'red';
-    delBtn.onclick = () => {
-      if (confirm("Supprimer ce passeur ?")) {
+    delBtn.onclick = async () => {
+      if (await appConfirm("Supprimer ce passeur ?", { title: "Supprimer un passeur", confirmText: "Oui, supprimer" })) {
         state.passeurList.splice(i, 1);
         if (typeof rebuildDeroulementAuto === 'function') {
           rebuildDeroulementAuto();
@@ -3969,7 +4157,7 @@ function addPasseur() {
   const nationalite = document.getElementById('passeurNationalite').value.trim();
   const lieu = document.getElementById('passeurLieu').value.trim();
   const suitesInfo = bf_getSuites('passeur');
-if (!suitesInfo.ok) { alert(suitesInfo.msg); return; }
+if (!suitesInfo.ok) { appAlert(suitesInfo.msg); return; }
 const suites = suitesInfo.suites;
 
   const dob = document.getElementById('passeurDob').value.trim(); // date de naissance
@@ -3977,7 +4165,7 @@ const event = document.getElementById('passeurEvent')?.value.trim() || "";
 
 
   if (!age || !sexe || !ageNum || !nationalite || !lieu || !suites) {
-    alert('Merci de remplir tous les champs PASSEUR.');
+    appAlert('Merci de remplir tous les champs PASSEUR.');
     return;
   }
 
@@ -4211,7 +4399,7 @@ function rebuildDeroulementAuto() {
       const datePourCr = ((dateInputEl && dateInputEl.value) || state.date || '').trim();
 
       if(!datePourCr) {
-        alert('Merci de sélectionner une date.');
+        appAlert('Merci de sélectionner une date.');
 
         const crEl = document.getElementById('compteRendu');
         if (crEl) crEl.value = '';
@@ -4334,7 +4522,7 @@ function autoResize(el) {
       const pulsarRenseigne = (pulsarOui && pulsarOui.checked) || (pulsarNon && pulsarNon.checked);
 
       if (!pulsarRenseigne) {
-        alert('Merci de renseigner PULSAR (OUI ou NON) avant de copier le compte rendu.');
+        appAlert('Merci de renseigner PULSAR (OUI ou NON) avant de copier le compte rendu.');
         showPage('generatePage');
         return;
       }
@@ -4345,7 +4533,7 @@ function autoResize(el) {
 
       const textarea = document.getElementById('compteRendu');
       if (!textarea) {
-        alert('Zone compte rendu introuvable.');
+        appAlert('Zone compte rendu introuvable.');
         return;
       }
 
@@ -4359,13 +4547,13 @@ function autoResize(el) {
       }
 
       if (!textarea.value || !textarea.value.trim()) {
-        alert('Impossible de copier : le compte rendu est vide. Vérifie les informations obligatoires.');
+        appAlert('Impossible de copier : le compte rendu est vide. Vérifie les informations obligatoires.');
         return;
       }
 
       try {
         navigator.clipboard.writeText(textarea.value).then(() => {
-          alert('Compte rendu copié dans le presse-papiers !');
+          appAlert('Compte rendu copié dans le presse-papiers !');
           if (typeof window.bfCrDemanderConfirmationEnvoi === 'function') {
             window.bfCrDemanderConfirmationEnvoi('Copie');
           }
@@ -4379,12 +4567,12 @@ function autoResize(el) {
       try {
         textarea.select();
         document.execCommand('copy');
-        alert('Compte rendu copié dans le presse-papiers !');
+        appAlert('Compte rendu copié dans le presse-papiers !');
         if (typeof window.bfCrDemanderConfirmationEnvoi === 'function') {
           window.bfCrDemanderConfirmationEnvoi('Copie');
         }
       } catch {
-        alert('Impossible de copier. Sélectionnez manuellement le texte.');
+        appAlert('Impossible de copier. Sélectionnez manuellement le texte.');
       }
     }
 
@@ -4426,7 +4614,7 @@ function autoResize(el) {
       const pulsarRenseigne = (pulsarOui && pulsarOui.checked) || (pulsarNon && pulsarNon.checked);
 
       if (!pulsarRenseigne) {
-        alert('Merci de renseigner PULSAR (OUI ou NON) avant d’envoyer le compte rendu sur WhatsApp.');
+        appAlert('Merci de renseigner PULSAR (OUI ou NON) avant d’envoyer le compte rendu sur WhatsApp.');
         showPage('generatePage');
         return;
       }
@@ -4437,7 +4625,7 @@ function autoResize(el) {
 
       const textarea = document.getElementById('compteRendu');
       if (!textarea) {
-        alert('Zone compte rendu introuvable.');
+        appAlert('Zone compte rendu introuvable.');
         return;
       }
 
@@ -4453,14 +4641,14 @@ function autoResize(el) {
       const cr = textarea.value ? textarea.value.trim() : '';
 
       if (!cr) {
-        alert('Impossible d’ouvrir WhatsApp : le compte rendu est vide. Vérifie les informations puis génère le CR.');
+        appAlert('Impossible d’ouvrir WhatsApp : le compte rendu est vide. Vérifie les informations puis génère le CR.');
         return;
       }
 
       const copieOk = await copyCompteRenduSansAlerte(textarea);
 
       if (!copieOk) {
-        alert('Le CR est généré, mais la copie automatique a échoué. Tu pourras quand même sélectionner le texte manuellement avant de le coller dans WhatsApp.');
+        appAlert('Le CR est généré, mais la copie automatique a échoué. Tu pourras quand même sélectionner le texte manuellement avant de le coller dans WhatsApp.');
       }
 
       // Ouvre WhatsApp avec le compte rendu déjà placé dans la zone de message.
@@ -4645,7 +4833,7 @@ function autoResize(el) {
         .filter(Boolean);
 
       if (lignes.length < 2) {
-        alert('Le fichier CSV semble vide ou incomplet.');
+        appAlert('Le fichier CSV semble vide ou incomplet.');
         return;
       }
 
@@ -4660,7 +4848,7 @@ function autoResize(el) {
       const idxCrt = headers.findIndex(h => ['crt', 'unite', 'unitecrt'].includes(h));
 
       if (idxGrade === -1 || idxNigend === -1 || idxCrt === -1 || (idxNomPrenom === -1 && idxNom === -1)) {
-        alert('Colonnes CSV attendues : grade, nomPrenom, nigend, crt.');
+        appAlert('Colonnes CSV attendues : grade, nomPrenom, nigend, crt.');
         return;
       }
 
@@ -4694,7 +4882,7 @@ function autoResize(el) {
 
       bfActualiserListeEsrLocal();
 
-      alert(`Import terminé : ${importes} ESR importé(s) / mis à jour.${ignores ? '\n' + ignores + ' ligne(s) ignorée(s).' : ''}`);
+      appAlert(`Import terminé : ${importes} ESR importé(s) / mis à jour.${ignores ? '\n' + ignores + ' ligne(s) ignorée(s).' : ''}`);
     }
 
 
@@ -4789,7 +4977,7 @@ function autoResize(el) {
 
     async function bfPdfExtraireTextePlanning(file) {
       if (!window.pdfjsLib) {
-        alert("Lecture PDF indisponible : PDF.js n'est pas chargé.");
+        appAlert("Lecture PDF indisponible : PDF.js n'est pas chargé.");
         return '';
       }
 
@@ -5017,7 +5205,7 @@ function autoResize(el) {
 • … et ${(sections || []).length - 8} autre(s) service(s)`
         : '';
 
-      alert(`SERVICE INCOMPATIBLE AVEC LA MISSION EN COURS
+      appAlert(`SERVICE INCOMPATIBLE AVEC LA MISSION EN COURS
 
 Mission verrouillée :
 ${bfPdfResumeMissionVerrouillee()}
@@ -5053,13 +5241,13 @@ ${trouves.join('\n')}${suite}` : ''}`);
       });
     }
 
-    function bfPdfImporterSectionPlanning(section, options = {}) {
+    async function bfPdfImporterSectionPlanning(section, options = {}) {
       if (!section) return false;
 
       const parsed = bfPdfExtraireEsrSection(section);
 
       if (!parsed.esrs.length) {
-        alert('Créneau trouvé, mais aucun ESR lisible dans ce bloc PDF.');
+        appAlert('Créneau trouvé, mais aucun ESR lisible dans ce bloc PDF.');
         return false;
       }
 
@@ -5076,7 +5264,7 @@ ${trouves.join('\n')}${suite}` : ''}`);
       }
 
       const remplacer = (state.esrList || []).length
-        ? confirm('Une liste ESR existe déjà pour cette mission.\n\nOK = remplacer par le planning PDF.\nAnnuler = ajouter / mettre à jour sans supprimer.')
+        ? await appConfirm('Une liste ESR existe déjà pour cette mission.\n\nVeux-tu remplacer la liste actuelle par celle du planning PDF ?', { title: 'Liste ESR existante', confirmText: 'Remplacer', cancelText: 'Ajouter / mettre à jour' })
         : true;
 
       if (remplacer) {
@@ -5100,7 +5288,7 @@ ${trouves.join('\n')}${suite}` : ''}`);
       updateUI();
       debounceSave();
 
-      alert(
+      appAlert(
         `Import PDF terminé : ${importes} ESR ajouté(s) / mis à jour.` +
         `\nService : ${bfPdfSectionLabel(section)}` +
         (parsed.neos.length ? `\nTablette(s) détectée(s) : ${parsed.neos.map(n => 'T' + n).join(', ')}` : '')
@@ -5230,7 +5418,7 @@ ${trouves.join('\n')}${suite}` : ''}`);
       const sections = bfPdfDecouperSectionsPlanning(texte);
 
       if (!sections.length) {
-        alert('Aucun service lisible trouvé dans ce planning PDF.');
+        appAlert('Aucun service lisible trouvé dans ce planning PDF.');
         return;
       }
 
@@ -5238,7 +5426,7 @@ ${trouves.join('\n')}${suite}` : ''}`);
       const missionComplete = !!(siteApp && dateApp && debutApp && finApp);
 
       if (!missionComplete) {
-        alert(`Les informations verrouillées de la mission sont incomplètes.
+        appAlert(`Les informations verrouillées de la mission sont incomplètes.
 
 L’import PDF est annulé afin de ne pas mélanger deux services.`);
         return;
@@ -5248,7 +5436,7 @@ L’import PDF est annulé afin de ne pas mélanger deux services.`);
 
       // Un seul service correspond exactement : import direct, comme auparavant.
       if (sectionsCompatibles.length === 1) {
-        bfPdfImporterSectionPlanning(sectionsCompatibles[0], { remplirMission: false });
+        await bfPdfImporterSectionPlanning(sectionsCompatibles[0], { remplirMission: false });
         return;
       }
 
@@ -5259,7 +5447,7 @@ L’import PDF est annulé afin de ne pas mélanger deux services.`);
           'Plusieurs services correspondent exactement à la mission verrouillée. Sélectionne celui dont tu veux importer les ESR et les tablettes.'
         );
         if (!sectionChoisie) return;
-        bfPdfImporterSectionPlanning(sectionChoisie, { remplirMission: false });
+        await bfPdfImporterSectionPlanning(sectionChoisie, { remplirMission: false });
         return;
       }
 
@@ -5549,7 +5737,7 @@ L’import PDF est annulé afin de ne pas mélanger deux services.`);
 
           const reader = new FileReader();
           reader.onload = e => bfImporterRepertoireEsrDepuisCsvTexte(e.target.result || '');
-          reader.onerror = () => alert('Impossible de lire le fichier CSV.');
+          reader.onerror = () => appAlert('Impossible de lire le fichier CSV.');
           reader.readAsText(file, 'UTF-8');
         });
       }
@@ -5625,7 +5813,7 @@ L’import PDF est annulé afin de ne pas mélanger deux services.`);
             await bfImporterEsrMissionDepuisPdfFichier(file);
           } catch (e) {
             console.error(e);
-            alert('Impossible de lire ou analyser le planning PDF.');
+            appAlert('Impossible de lire ou analyser le planning PDF.');
           }
         });
       }
@@ -5862,7 +6050,7 @@ if (typeof bf_setSuites === "function") {
         }
 
         showPage("passeurPage");
-        alert('Fiche PASSEUR importée via QR.\nVérifie puis clique sur "Ajouter Passeur".');
+        appAlert('Fiche PASSEUR importée via QR.\nVérifie puis clique sur "Ajouter Passeur".');
 
       } else {
   // 👉 Par défaut : ESI
@@ -5904,7 +6092,7 @@ if (typeof bf_setSuites === "function") {
   }
 
   showPage("esiPage");
-  alert('Fiche ESI importée via QR.\nVérifie puis clique sur "Ajouter ESI".');
+  appAlert('Fiche ESI importée via QR.\nVérifie puis clique sur "Ajouter ESI".');
 }
 
 
@@ -6530,8 +6718,8 @@ function soumettreFiche(rediriger) {
   const suitesType = document.getElementById('suitesTypeFiche')?.value || '';
 const suitesLieu = (document.getElementById('suitesLieuFiche')?.value || '').trim();
 
-if (!suitesType) { alert("Merci de sélectionner les suites données."); return; }
-if (suitesType === 'TRANSPORT_PAF' && !suitesLieu) { alert("Merci de préciser le lieu du TRANSPORT PAF."); return; }
+if (!suitesType) { appAlert("Merci de sélectionner les suites données."); return; }
+if (suitesType === 'TRANSPORT_PAF' && !suitesLieu) { appAlert("Merci de préciser le lieu du TRANSPORT PAF."); return; }
 
 const suitesDonnees = (suitesType === 'TRANSPORT_PAF')
   ? `TRANSPORT PAF ${suitesLieu}`
@@ -6739,8 +6927,8 @@ elementTimer.style.fontWeight = 'bold';
 }
 
 
-function supprimerFiche(index) {
-    if (confirm("Voulez-vous vraiment supprimer cette fiche ?")) {
+async function supprimerFiche(index) {
+    if (await appConfirm("Voulez-vous vraiment supprimer cette fiche ?", { title: "Supprimer la fiche", confirmText: "Oui, supprimer" })) {
         const fiches = JSON.parse(localStorage.getItem('fichesBorderforce') || '[]');
         fiches.splice(index, 1);
         localStorage.setItem('fichesBorderforce', JSON.stringify(fiches));
@@ -6822,11 +7010,11 @@ toggleSuitesLieuFiche();
     afficherHistorique();
 }
 
-document.getElementById('effacerFiches').addEventListener('click', function() {
-    if (confirm("Voulez-vous vraiment effacer toutes les fiches ?")) {
+document.getElementById('effacerFiches').addEventListener('click', async function() {
+    if (await appConfirm("Voulez-vous vraiment effacer toutes les fiches ?", { title: "Effacer toutes les fiches", confirmText: "Oui, effacer" })) {
         localStorage.removeItem('fichesBorderforce');
         afficherHistorique();
-        alert("Toutes les fiches ont été effacées !");
+        appAlert("Toutes les fiches ont été effacées !");
     }
 });
 
@@ -7196,7 +7384,7 @@ function annulerFinMissionBorderForce() {
   if (popup) popup.style.display = 'none';
 }
 
-function confirmerFinMissionBorderForce() {
+async function confirmerFinMissionBorderForce() {
   const popup = document.getElementById('popupFinMission');
   if (popup) popup.style.display = 'none';
     
@@ -7259,7 +7447,7 @@ function confirmerFinMissionBorderForce() {
     if (typeof window.bfCrNettoyerStatutMission === 'function') {
       window.bfCrNettoyerStatutMission();
     }
-    alert("Mission terminée. Les données ont été effacées et le premier ESR a été conservé.");
+    await appAlert("Mission terminée. Les données ont été effacées et le premier ESR a été conservé.", { title: "Fin de mission", icon: "fa-flag-checkered" });
     location.replace('../index.html');
 }
 
@@ -7544,7 +7732,7 @@ function majAffichageComptage(){
 
 function ajouterDeroulementFlex(){
   const zone = document.getElementById("deroulement");
-  if(!zone){ alert("⚠️ Zone 'Déroulement' introuvable."); return; }
+  if(!zone){ appAlert("⚠️ Zone 'Déroulement' introuvable."); return; }
 
   const heure = document.getElementById("heure_action").value;
   const act   = (document.getElementById("type_action").value || "").trim();
@@ -7558,7 +7746,7 @@ function ajouterDeroulementFlex(){
   const suffix = buildSuffixComptage(nbCtrl, nbDesc);
 
   if(!hStr && !corps && !suffix){
-    alert("Renseignez au moins l’heure ou une action (prédéfinie, infos supplémentaires ou texte libre).");
+    appAlert("Renseignez au moins l’heure ou une action (prédéfinie, infos supplémentaires ou texte libre).");
     return;
   }
 
@@ -7782,10 +7970,11 @@ function bfVerifierDemandeDeroulementAutomatique() {
   BF_DEROULEMENT_AUTO_DERNIERE_PROPOSITION = signature;
   localStorage.setItem(BF_DEROULEMENT_AUTO_PROPOSITION_KEY, signature);
 
-  setTimeout(() => {
+  setTimeout(async () => {
     const dateAffichee = date.split("-").reverse().join("/");
-    const confirmation = confirm(
-      `Générer automatiquement le déroulement ?\n\n${site} — ${dateAffichee}\n${heureDebut} à ${heureFin}`
+    const confirmation = await appConfirm(
+      `Générer automatiquement le déroulement ?\n\n${site} — ${dateAffichee}\n${heureDebut} à ${heureFin}`,
+      { title: "Déroulement automatique", icon: "fa-route", confirmText: "Oui, générer", cancelText: "Non", danger: false }
     );
 
     if (confirmation) {
@@ -7801,17 +7990,17 @@ function bfGenererDeroulementAutomatique() {
   const zone = document.getElementById("deroulement");
 
   if (!zone) {
-    alert("⚠️ Zone Déroulement introuvable.");
+    appAlert("⚠️ Zone Déroulement introuvable.");
     return;
   }
 
   if (!site || !heureDebut || !heureFin) {
-    alert("Merci de renseigner le site, l'heure de début et l'heure de fin de mission.");
+    appAlert("Merci de renseigner le site, l'heure de début et l'heure de fin de mission.");
     return;
   }
 
   if (site === "DSI Tende") {
-    alert("Déroulement automatique non disponible pour DSI Tende. Merci de saisir le déroulement manuellement.");
+    appAlert("Déroulement automatique non disponible pour DSI Tende. Merci de saisir le déroulement manuellement.");
     return;
   }
 
@@ -7821,7 +8010,7 @@ function bfGenererDeroulementAutomatique() {
   let fin = bfAutoTimeToMinutes(heureFin);
 
   if (debut === null || fin === null) {
-    alert("Les heures de début et de fin ne sont pas valides.");
+    appAlert("Les heures de début et de fin ne sont pas valides.");
     return;
   }
 
@@ -7838,7 +8027,7 @@ function bfGenererDeroulementAutomatique() {
   const finService = fin + 30;
 
   if (departSite < arriveeSite) {
-    alert("La durée de mission est trop courte par rapport au temps de trajet prévu pour ce site.");
+    appAlert("La durée de mission est trop courte par rapport au temps de trajet prévu pour ce site.");
     return;
   }
 
@@ -7864,7 +8053,7 @@ function bfGenererDeroulementAutomatique() {
     zone.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
-  alert("Déroulement automatique généré. Tu peux modifier les lignes si besoin.");
+  appAlert("Déroulement automatique généré. Tu peux modifier les lignes si besoin.");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -8098,7 +8287,7 @@ function openMrzImport(){
   const url = '../mrz/index.html?source=borderforce';
   const win = window.open(url, 'BF_MRZ_SCANNER', 'popup=yes,width=430,height=850');
   if (!win) {
-    alert("Le navigateur a bloqué l'ouverture du scanner MRZ. Autorise les pop-ups pour ce site, ou ouvre le dossier MRZ manuellement.");
+    appAlert("Le navigateur a bloqué l'ouverture du scanner MRZ. Autorise les pop-ups pour ce site, ou ouvre le dossier MRZ manuellement.");
     return;
   }
   try { win.focus(); } catch(e) {}
@@ -8115,7 +8304,7 @@ function parseMRZ(){
   const status = (msg) => { if (statusEl) statusEl.textContent = msg; };
 
   if (!mrzInput){
-    alert("mrzInput introuvable");
+    appAlert("mrzInput introuvable");
     return;
   }
 
@@ -8290,7 +8479,7 @@ function cleanMrzText(){
   const status = (msg) => { if (statusEl) statusEl.textContent = msg; };
 
   if (!input){
-    alert("mrzInput introuvable");
+    appAlert("mrzInput introuvable");
     return;
   }
 
@@ -9877,19 +10066,19 @@ function cleanMrzText(){
       if (!navigator.onLine && !selection.theoretical) {
         bfTrainEffacerResultats();
         bfTrainSetStatus("Aucune connexion Internet. Le train SNCF en ligne a été effacé. Les horaires Trenitalia théoriques restent utilisables.", "error");
-        alert("La connexion Internet n'est plus disponible. Le train SNCF en ligne a été effacé pour éviter d'utiliser une information ancienne.");
+        appAlert("La connexion Internet n'est plus disponible. Le train SNCF en ligne a été effacé pour éviter d'utiliser une information ancienne.");
         return;
       }
 
       if (bfTrainState.lastQuerySignature && bfTrainState.lastQuerySignature !== bfTrainQuerySignature()) {
         bfTrainEffacerResultats("Les informations de mission ont changé : relance la consultation des trains.");
-        alert("La date ou les horaires de mission ont changé. Relance la consultation avant de sélectionner le train.");
+        appAlert("La date ou les horaires de mission ont changé. Relance la consultation avant de sélectionner le train.");
         return;
       }
 
       const zone = bfTrainEl("deroulement");
       if (!zone) {
-        alert("⚠️ Zone 'Déroulement' introuvable.");
+        appAlert("⚠️ Zone 'Déroulement' introuvable.");
         return;
       }
 
@@ -9907,7 +10096,7 @@ function cleanMrzText(){
         : "";
 
       if (!heure && !corps && !suffix) {
-        alert("Renseignez au moins l'heure ou une action.");
+        appAlert("Renseignez au moins l'heure ou une action.");
         return;
       }
 
