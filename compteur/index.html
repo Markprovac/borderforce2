@@ -1054,20 +1054,6 @@ span[id$="Count"] {
 </script>
 <div id="homePage" class="page active">
   <h1 class="home-title">
-    <button onclick="window.location.href='../index.html'" style="
-      float:left;
-      margin-right:10px;
-      background:white;
-      color:#003366;
-      border:none;
-      border-radius:6px;
-      padding:4px 8px;
-      font-size:0.9em;
-      cursor:pointer;
-      box-shadow:0 2px 5px rgba(0,0,0,0.2);
-    ">
-      🏠 Accueil
-    </button>
     COMPTEUR BORDERFORCE<br>
     <span class="sous-titre">Moyens / Personnes contrôlées</span>
   </h1>
@@ -1551,10 +1537,24 @@ span[id$="Count"] {
   <textarea id="compteRendu" readonly rows="12" style="font-family:monospace; white-space:pre-wrap;"></textarea>
 </section>
 <section style="text-align:center; margin-top:30px;">
-    <button id="resetBtn" class="red">Effacer les données sauvegardées</button>
+    <button id="resetBtn" class="red"><i class="fas fa-flag-checkered"></i> Fin de mission</button>
 	</section>
 </div>
   
+
+
+<!-- Confirmation de fin de mission -->
+<div id="popupFinMission" class="popup-overlay" role="dialog" aria-modal="true" aria-labelledby="popupFinMissionTitre">
+  <div class="popup-box">
+    <h3 id="popupFinMissionTitre"><i class="fas fa-flag-checkered"></i> Fin de mission</h3>
+    <p>Confirmer la fin de mission et effacer les données de comptage enregistrées ?</p>
+    <p style="font-size:.9em; color:#dbeafe;"><strong>L’identité de l’ESR sera conservée</strong>, comme auparavant.</p>
+    <div class="popup-buttons">
+      <button id="compteurFinMissionOuiBtn" type="button" class="popup-btn call">Oui, terminer</button>
+      <button id="compteurFinMissionAnnulerBtn" type="button" class="popup-btn cancel">Annuler</button>
+    </div>
+  </div>
+</div>
 
 <!-- Bouton Accueil flottant : visible uniquement hors page d'accueil -->
 <button id="floatingHomeBtn" type="button" aria-label="Retour accueil" title="Accueil">
@@ -1942,9 +1942,19 @@ if (qrDiv) {
     }
   });
 
+  const popupFinMission = document.getElementById('popupFinMission');
+
   if (document.getElementById('resetBtn'))
     document.getElementById('resetBtn').addEventListener('click', ()=>{
-      if(!confirm("Voulez-vous terminer la mission et effacer les données sauvegardées ?")) return;
+      if (popupFinMission) popupFinMission.style.display = 'flex';
+    });
+
+  document.getElementById('compteurFinMissionAnnulerBtn')?.addEventListener('click', ()=>{
+    if (popupFinMission) popupFinMission.style.display = 'none';
+  });
+
+  document.getElementById('compteurFinMissionOuiBtn')?.addEventListener('click', ()=>{
+      if (popupFinMission) popupFinMission.style.display = 'none';
       state.vehicules={train:0,bus:0,vl:0,pl:0};
       state.cv={train:0,bus:0,vl:0,pl:0};
       state.cf={train:0,bus:0,vl:0,pl:0};
@@ -1954,19 +1964,18 @@ if (qrDiv) {
       if(document.getElementById('qrcode')) document.getElementById('qrcode').innerHTML='';
       localStorage.removeItem('moyensData');
       localStorage.removeItem('siteSelection');
-	   localStorage.removeItem('fichesESI');
-	    // On vide l’historique à l’écran si la fonction existe
-    if (typeof afficherHistorique === 'function') {
-      afficherHistorique();
-    }
-    // On nettoie le QR des fiches identité
-    const qrFiche = document.getElementById('qrFicheContainer');
-    if (qrFiche) qrFiche.innerHTML = '';
-       localStorage.removeItem('bf_mission_session_v1');
-       displaySelectedSite();
-       filtrerCompteurs();
-       alert("Mission terminée. L'application va revenir à l'écran de démarrage.");
-       location.replace('../index.html');
+      localStorage.removeItem('fichesESI');
+      // L'identité ESR reste conservée dans infosPersonnelles.
+      if (typeof afficherHistorique === 'function') {
+        afficherHistorique();
+      }
+      const qrFiche = document.getElementById('qrFicheContainer');
+      if (qrFiche) qrFiche.innerHTML = '';
+      localStorage.removeItem('bf_mission_session_v1');
+      displaySelectedSite();
+      filtrerCompteurs();
+      alert("Mission terminée. L'identité ESR a été conservée. L'application va revenir à l'écran de démarrage.");
+      location.replace('../index.html');
     });
 
   // Boutons Infos
