@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bf-suite-v41-borderforce-vignette';
+const CACHE_NAME = 'bf-suite-v42-fin-mission';
 const URLS_TO_CACHE = [
   './',
   './index.html',
