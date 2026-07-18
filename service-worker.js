@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bf-suite-v40-sans-pull-refresh';
+const CACHE_NAME = 'bf-suite-v41-borderforce-vignette';
 const URLS_TO_CACHE = [
   './',
   './index.html',

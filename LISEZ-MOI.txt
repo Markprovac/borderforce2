@@ -1,18 +1,10 @@
-SUITE BORDERFORCE — ACCUEIL À VIGNETTES
+MODIFICATION BORDER FORCE — VIGNETTE MISSION
 
-Cette version modifie uniquement l'accueil et le cache PWA nécessaire à sa mise à jour.
-Border Force et Compteur sont identiques à la version précédente.
+Fichiers à remplacer sur GitHub :
+- borderforce/index.html
+- service-worker.js à la racine
 
-NOUVEL ACCUEIL
-1. Vignette rôle : chef de dispositif ou compteur.
-2. Vignette site : Breil-sur-Roya, La Turbie ou DSI Tende.
-3. Vignette date et horaires.
-4. Vignette récapitulative avant de commencer la mission.
-
-L'image images/fond-tech3.jpg reste en arrière-plan et doit rester présente dans le dépôt GitHub.
-
-FICHIERS À REMPLACER AU MINIMUM
-- index.html
-- service-worker.js
-
-Le service worker passe au cache bf-suite-v38-accueil-vignettes afin que la PWA installée récupère le nouvel accueil.
+Cette version ne modifie aucune fonction liée au site, à la date ou aux horaires.
+Les champs d'origine sont seulement masqués visuellement et restent présents dans le HTML avec les mêmes identifiants.
+Une vignette affiche les informations enregistrées depuis l'accueil.
+La logique du déroulement automatique n'a pas été modifiée dans cette étape.
