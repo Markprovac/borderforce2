@@ -1501,6 +1501,54 @@ button.whatsapp:hover {
   }
 }
 
+
+/* =========================================================
+   VIGNETTE MISSION VERROUILLÉE — présentation uniquement
+   Les champs d'origine restent présents et continuent d'être
+   utilisés par toutes les fonctions existantes de Border Force.
+   ========================================================= */
+.bf-mission-summary-card {
+  margin: 12px 0 8px 0;
+  padding: 15px;
+  border: 2px solid #003366;
+  border-radius: 14px;
+  background: #f8fbff;
+  text-align: center;
+  box-shadow: 0 3px 10px rgba(0, 51, 102, .10);
+}
+
+.bf-mission-summary-card h3 {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+}
+
+.bf-mission-summary-value {
+  display: block;
+  margin: 0 auto 10px auto;
+  padding: 12px 15px;
+  background: #003366;
+  color: #ffffff;
+  border-radius: 9px;
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+.bf-mission-summary-value span {
+  display: block;
+}
+
+.bf-mission-summary-note {
+  margin: 0;
+  color: #5d6b7a;
+  font-size: .86em;
+  line-height: 1.4;
+}
+
+/* Masquage visuel uniquement : les champs et leurs identifiants restent intacts. */
+#bfMissionTechnicalFields {
+  display: none !important;
+}
+
 </style>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
@@ -1519,6 +1567,38 @@ button.whatsapp:hover {
     return;
   }
   window.BF_MISSION_SESSION = mission;
+
+  function bfAfficherResumeMission() {
+    const current = window.BF_MISSION_SESSION || {};
+    const nomsSites = {
+      "Breil": "Breil-sur-Roya",
+      "Breil-sur-Roya": "Breil-sur-Roya",
+      "La Turbie": "La Turbie",
+      "DSI Tende": "DSI Tende"
+    };
+
+    const site = nomsSites[current.site] || current.site || "Site non renseigné";
+    let date = "Date non renseignée";
+    if (current.date) {
+      const morceaux = String(current.date).split("-");
+      date = morceaux.length === 3
+        ? `${morceaux[2]}/${morceaux[1]}/${morceaux[0]}`
+        : current.date;
+    }
+
+    const debut = current.heureDebut || "--:--";
+    const fin = current.heureFin || "--:--";
+
+    const siteEl = document.getElementById("bfMissionSummarySite");
+    const dateEl = document.getElementById("bfMissionSummaryDate");
+    const hoursEl = document.getElementById("bfMissionSummaryHours");
+
+    if (siteEl) siteEl.textContent = site;
+    if (dateEl) dateEl.textContent = date;
+    if (hoursEl) hoursEl.textContent = `${debut} – ${fin}`;
+  }
+
+  document.addEventListener("DOMContentLoaded", bfAfficherResumeMission);
   window.bfUpdateMissionFromChef = (values) => {
     const current = window.BF_MISSION_SESSION || {};
     const updated = {...current, ...values, active:true, role:"chef", updatedAt:Date.now()};
@@ -1703,33 +1783,44 @@ button.whatsapp:hover {
         <input id="bfImporterEsrPdfInput" type="file" accept=".pdf,application/pdf" style="display:none;">
       </div>
 
-      <div class="small-note" style="background:#eaf8ef; border-left:4px solid #27ae60; padding:9px 10px; border-radius:10px; margin-bottom:10px;">
-        <strong>Mission active :</strong> le site, la date et les horaires ont été repris automatiquement depuis l'écran de démarrage.
+      <div class="bf-mission-summary-card" aria-label="Informations verrouillées de la mission">
+        <h3><i class="fas fa-lock" aria-hidden="true"></i> Mission en cours</h3>
+        <div class="bf-mission-summary-value">
+          <span id="bfMissionSummarySite">Chargement…</span>
+          <span id="bfMissionSummaryDate">Date non renseignée</span>
+          <span id="bfMissionSummaryHours">Horaires non renseignés</span>
+        </div>
+        <p class="bf-mission-summary-note">
+          Le site, la date et les horaires sont verrouillés pour cette mission afin d'éviter une modification accidentelle.
+        </p>
       </div>
 
-      <div class="form-grid mission-compact">
-        <div class="full">
-          <label for="siteSelect">Site :</label>
-          <select id="siteSelect" aria-label="Sélection du site">
-            <option value="Breil">Breil</option>
-            <option value="La Turbie">La Turbie</option>
-            <option value="DSI Tende">DSI Tende</option>
-          </select>
-        </div>
+      <!-- Champs d'origine conservés à l'identique pour toutes les fonctions existantes. -->
+      <div id="bfMissionTechnicalFields" aria-hidden="true">
+        <div class="form-grid mission-compact">
+          <div class="full">
+            <label for="siteSelect">Site :</label>
+            <select id="siteSelect" aria-label="Sélection du site">
+              <option value="Breil">Breil</option>
+              <option value="La Turbie">La Turbie</option>
+              <option value="DSI Tende">DSI Tende</option>
+            </select>
+          </div>
 
-        <div>
-          <label for="dateInput">Date :</label>
-          <input type="date" id="dateInput" />
-        </div>
+          <div>
+            <label for="dateInput">Date :</label>
+            <input type="date" id="dateInput" />
+          </div>
 
-        <div>
-          <label for="heureDebutInput">Heure début :</label>
-          <input type="time" id="heureDebutInput" />
-        </div>
+          <div>
+            <label for="heureDebutInput">Heure début :</label>
+            <input type="time" id="heureDebutInput" />
+          </div>
 
-        <div>
-          <label for="heureFinInput">Heure fin :</label>
-          <input type="time" id="heureFinInput" />
+          <div>
+            <label for="heureFinInput">Heure fin :</label>
+            <input type="time" id="heureFinInput" />
+          </div>
         </div>
       </div>
     </section>
