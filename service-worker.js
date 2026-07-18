@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bf-suite-v44-securite-envoi-cr';
+const CACHE_NAME = 'bf-suite-v45-deroulement-auto-demarrage';
 const URLS_TO_CACHE = [
   './',
   './index.html',
