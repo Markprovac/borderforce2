@@ -6259,6 +6259,13 @@ generateCompteRendu = function() {
       }
 
       updateUI();
+
+      // Les champs de mission sont remplis automatiquement depuis l'accueil.
+      // On déclenche donc ici la proposition qui était auparavant lancée
+      // uniquement après une saisie manuelle du site ou des horaires.
+      if (typeof bfVerifierDemandeDeroulementAutomatique === 'function') {
+        bfVerifierDemandeDeroulementAutomatique();
+      }
 	  
 	  const esiSuitesType = document.getElementById('esiSuitesType');
 if (esiSuitesType) {
@@ -7248,6 +7255,7 @@ function confirmerFinMissionBorderForce() {
     localStorage.setItem('borderforce', JSON.stringify(newState));
     localStorage.removeItem('siteSelection');
     localStorage.removeItem('bf_mission_session_v1');
+    localStorage.removeItem('bf_deroulement_auto_proposition_v1');
     if (typeof window.bfCrNettoyerStatutMission === 'function') {
       window.bfCrNettoyerStatutMission();
     }
@@ -7710,6 +7718,7 @@ const BF_DEROULEMENT_AUTO_TRAJETS = {
   "La Turbie": { aller: 20, retour: 20 }
 };
 
+const BF_DEROULEMENT_AUTO_PROPOSITION_KEY = "bf_deroulement_auto_proposition_v1";
 let BF_DEROULEMENT_AUTO_DERNIERE_PROPOSITION = "";
 
 function bfAutoTimeToMinutes(value) {
@@ -7748,6 +7757,7 @@ function bfAutoRetirerAnciennesLignes(lignes) {
 
 function bfVerifierDemandeDeroulementAutomatique() {
   const site = (document.getElementById("siteSelect")?.value || "").trim();
+  const date = (document.getElementById("dateInput")?.value || "").trim();
   const heureDebut = (document.getElementById("heureDebutInput")?.value || "").trim();
   const heureFin = (document.getElementById("heureFinInput")?.value || "").trim();
 
@@ -7757,18 +7767,25 @@ function bfVerifierDemandeDeroulementAutomatique() {
   // On ne propose que pour les sites prévus.
   if (!BF_DEROULEMENT_AUTO_TRAJETS[site]) return;
 
-  // On attend que les trois champs soient renseignés.
-  if (!site || !heureDebut || !heureFin) return;
+  // On attend que la mission verrouillée soit complètement chargée.
+  if (!site || !date || !heureDebut || !heureFin) return;
 
-  const signature = `${site}|${heureDebut}|${heureFin}`;
+  const mission = window.BF_MISSION_SESSION || {};
+  const identifiantMission = mission.createdAt || mission.updatedAt || "mission";
+  const signature = `${identifiantMission}|${site}|${date}|${heureDebut}|${heureFin}`;
 
-  // Évite de redemander plusieurs fois pour les mêmes valeurs.
+  // La question n'est posée qu'une seule fois pour cette mission,
+  // même si Border Force est fermé, rouvert ou rechargé.
+  if (localStorage.getItem(BF_DEROULEMENT_AUTO_PROPOSITION_KEY) === signature) return;
   if (signature === BF_DEROULEMENT_AUTO_DERNIERE_PROPOSITION) return;
+
   BF_DEROULEMENT_AUTO_DERNIERE_PROPOSITION = signature;
+  localStorage.setItem(BF_DEROULEMENT_AUTO_PROPOSITION_KEY, signature);
 
   setTimeout(() => {
+    const dateAffichee = date.split("-").reverse().join("/");
     const confirmation = confirm(
-      `Voulez-vous générer automatiquement le déroulement pour ${site} de ${heureDebut} à ${heureFin} ?`
+      `Générer automatiquement le déroulement ?\n\n${site} — ${dateAffichee}\n${heureDebut} à ${heureFin}`
     );
 
     if (confirmation) {
