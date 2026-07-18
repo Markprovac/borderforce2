@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bf-suite-v42-fin-mission';
+const CACHE_NAME = 'bf-suite-v43-import-pdf-verrouille';
 const URLS_TO_CACHE = [
   './',
   './index.html',
