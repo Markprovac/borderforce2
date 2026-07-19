@@ -1657,6 +1657,261 @@ button.whatsapp:hover {
   }
 }
 
+
+/* =========================================================
+   BUS ZEST EN LIGNE — BREIL ET SECTEUR DSI TENDE
+   Horaires théoriques GTFS + temps réel GTFS-RT.
+   Les résultats consultés ne sont pas conservés après la mission.
+   ========================================================= */
+#bfBusZestPanel {
+  display: none;
+  margin: 12px 0;
+  padding: 14px;
+  border: 2px solid #b45309;
+  border-radius: 14px;
+  background: #fffaf2;
+  box-shadow: 0 4px 12px rgba(180, 83, 9, .12);
+}
+
+#bfBusZestPanel h3 {
+  margin: 0 0 6px 0;
+  text-align: left;
+  color: #7c2d12;
+}
+
+#bfBusZestPanel .bf-bus-intro {
+  margin: 0 0 10px 0;
+  color: #5b4636;
+  font-size: .91em;
+  line-height: 1.4;
+}
+
+#bfBusSiteBlock {
+  display: none;
+  margin: 10px 0 12px 0;
+  padding: 11px;
+  border: 1px solid #e4c29e;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+#bfBusSiteBlock label {
+  margin: 0 0 5px 0;
+  color: #7c2d12;
+  font-weight: 800;
+}
+
+#bfBusSiteBlock select {
+  margin-bottom: 5px;
+  min-height: 46px;
+  border: 2px solid #b45309;
+  font-weight: 700;
+}
+
+#bfBusSiteHelp {
+  color: #6b5a4d;
+  font-size: .84em;
+  line-height: 1.35;
+}
+
+.bf-bus-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.bf-bus-actions button {
+  flex: 1 1 190px;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: 12px;
+}
+
+.bf-bus-actions .bf-bus-close {
+  flex: 0 1 130px;
+  background: #e74c3c;
+  color: #ffffff;
+}
+
+#bfBusZestStatus {
+  display: none;
+  margin: 8px 0;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid #ead8c5;
+  color: #4b3c31;
+  font-size: .9em;
+  line-height: 1.4;
+}
+
+#bfBusZestStatus.info { display: block; }
+#bfBusZestStatus.success {
+  display: block;
+  background: #edf9f1;
+  border-color: #9ed8af;
+  color: #185b2b;
+}
+#bfBusZestStatus.warning {
+  display: block;
+  background: #fff7e6;
+  border-color: #f0c46b;
+  color: #7a4b00;
+}
+#bfBusZestStatus.error {
+  display: block;
+  background: #fff0f0;
+  border-color: #e3a1a1;
+  color: #8b1e1e;
+}
+
+.bf-bus-section-title {
+  margin: 13px 0 7px 0;
+  color: #7c2d12;
+  font-size: .95em;
+  font-weight: 800;
+}
+
+.bf-bus-card {
+  background: #ffffff;
+  border: 1px solid #e5d2bf;
+  border-radius: 12px;
+  padding: 11px;
+  margin: 8px 0;
+}
+
+.bf-bus-card.near {
+  border: 2px solid #27ae60;
+  box-shadow: 0 3px 10px rgba(39, 174, 96, .14);
+}
+
+.bf-bus-card.selected {
+  border: 2px solid #b45309;
+  background: #fff5e7;
+}
+
+.bf-bus-card.cancelled {
+  border-color: #d66b6b;
+  background: #fff3f3;
+  opacity: .84;
+}
+
+.bf-bus-title {
+  font-weight: 900;
+  color: #3f2b1e;
+  line-height: 1.35;
+}
+
+.bf-bus-route {
+  margin-top: 3px;
+  color: #5b4636;
+  font-size: .92em;
+}
+
+.bf-bus-time {
+  margin-top: 6px;
+  color: #7c2d12;
+  font-weight: 800;
+  font-size: .94em;
+}
+
+.bf-bus-meta {
+  margin-top: 5px;
+  color: #6b5a4d;
+  font-size: .84em;
+  line-height: 1.4;
+}
+
+.bf-bus-card button[data-bf-bus-event] {
+  width: 100%;
+  justify-content: center;
+  margin: 9px 0 0 0;
+  min-height: 42px;
+  border-radius: 10px;
+  background: #b45309;
+  color: #ffffff;
+}
+
+.bf-bus-others-toggle {
+  width: 100%;
+  margin: 12px 0 7px 0;
+  padding: 10px 12px;
+  min-height: 42px;
+  justify-content: space-between;
+  background: #fff1df;
+  color: #7c2d12;
+  border: 1px solid #e4c29e;
+  border-radius: 11px;
+  text-align: left;
+}
+
+.bf-bus-others-toggle .bf-bus-toggle-sign {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #b45309;
+  color: #fff;
+  font-size: 1.25em;
+  line-height: 1;
+}
+
+.bf-bus-others-list[hidden] {
+  display: none !important;
+}
+
+#bfBusZestSelected {
+  display: none;
+  margin-top: 10px;
+  padding: 11px;
+  border-radius: 12px;
+  background: #eaf8ef;
+  border: 2px solid #27ae60;
+  color: #174d27;
+  line-height: 1.4;
+}
+
+#bfBusZestSelected strong {
+  color: #0f3e1d;
+}
+
+#bfBusZestSelected button {
+  margin-top: 8px;
+  background: #e74c3c;
+  color: #ffffff;
+  min-height: 38px;
+}
+
+.bf-bus-empty {
+  padding: 10px;
+  color: #6b5a4d;
+  background: #ffffff;
+  border: 1px dashed #d9bfa4;
+  border-radius: 10px;
+  font-size: .9em;
+}
+
+.bf-bus-source-live {
+  color: #176b31;
+  font-weight: 800;
+}
+
+.bf-bus-source-theoretical {
+  color: #855600;
+  font-weight: 800;
+}
+
+@media (max-width: 520px) {
+  .bf-bus-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
+
 </style>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
@@ -2647,7 +2902,46 @@ button.whatsapp:hover {
       <div id="bfTrainBreilSelected"></div>
     </div>
 
-	
+
+    <!-- Assistance bus Zest : visible seulement pour Breil ou DSI Tende + action Bus -->
+    <div id="bfBusZestPanel" aria-live="polite">
+      <h3 id="bfBusPanelTitle"><i class="fas fa-bus"></i> Bus Zest du secteur</h3>
+      <p class="bf-bus-intro">
+        L’application consulte les horaires officiels Zest des lignes <strong>19, 23 et 25</strong>.
+        Elle affiche l’horaire actualisé lorsqu’il est disponible et conserve l’horaire théorique
+        comme solution de secours. Seuls les passages compris dans les horaires de la mission sont proposés.
+      </p>
+
+      <div id="bfBusSiteBlock">
+        <label for="bfBusSiteSelect">Arrêt / secteur du contrôle :</label>
+        <select id="bfBusSiteSelect" aria-label="Arrêt ou secteur du contrôle bus">
+          <option value="">— Choisir le secteur —</option>
+          <option value="breil">Breil-sur-Roya</option>
+          <option value="fontan-saorge">Fontan / Saorge</option>
+          <option value="saint-dalmas">Saint-Dalmas-de-Tende</option>
+          <option value="la-brigue">La Brigue</option>
+          <option value="tende">Tende</option>
+        </select>
+        <div id="bfBusSiteHelp">
+          Pour DSI Tende, choisis la commune ou l’arrêt correspondant au lieu réel du contrôle.
+        </div>
+      </div>
+
+      <div class="bf-bus-actions">
+        <button id="bfBusZestRefreshBtn" type="button" class="blue">
+          <i class="fas fa-rotate"></i> Consulter les bus
+        </button>
+        <button id="bfBusZestCloseBtn" type="button" class="bf-bus-close" aria-label="Fermer la fenêtre des bus">
+          <i class="fas fa-xmark"></i> Fermer
+        </button>
+      </div>
+
+      <div id="bfBusZestStatus"></div>
+      <div id="bfBusZestList"></div>
+      <div id="bfBusZestSelected"></div>
+    </div>
+
+
  <!-- 🔻 : infos supplémentaires  -->
     <label style="display:block;margin-top:6px">Infos supplémentaires</label>
     <select id="esi_select">
@@ -10202,6 +10496,940 @@ function cleanMrzText(){
     bfTrainInstallerAjoutDeroulement();
     bfTrainInstallerEvenements();
     bfTrainMajVisibilite();
+  });
+})();
+</script>
+
+
+<script id="bfBusZestIntegration">
+/* =========================================================
+   ASSISTANCE BUS ZEST — BREIL ET SECTEUR DSI TENDE
+   - Worker Cloudflare : GTFS statique + GTFS-RT Zest
+   - lignes 19, 23 et 25
+   - sélection d'un passage puis ajout au déroulement
+   - le comptage Bus/CV est recalculé par la logique existante
+   ========================================================= */
+(function () {
+  "use strict";
+
+  const BF_BUS_WORKER_BASE = (
+    window.BF_BUS_WORKER_BASE ||
+    "https://borderforce-bus-zest.markrusten.workers.dev"
+  ).replace(/\/+$/, "");
+
+  const BF_BUS_ALLOWED_SITES = new Set(["breil", "dsi tende"]);
+  const BF_BUS_MARGIN_MINUTES = 20;
+
+  const BF_BUS_SITE_LABELS = {
+    "breil": "Breil-sur-Roya",
+    "fontan-saorge": "Fontan / Saorge",
+    "saint-dalmas": "Saint-Dalmas-de-Tende",
+    "la-brigue": "La Brigue",
+    "tende": "Tende"
+  };
+
+  const bfBusState = {
+    events: [],
+    selection: null,
+    lastQuerySignature: "",
+    loading: false,
+    panelClosed: false,
+    othersExpanded: false,
+    lastActionWasBus: false,
+    response: null
+  };
+
+  window.BF_BUS_SELECTION = null;
+
+  function bfBusEl(id) {
+    return document.getElementById(id);
+  }
+
+  function bfBusNormaliserTexte(value) {
+    return String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ");
+  }
+
+  function bfBusEchapperHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function bfBusMissionSiteKey() {
+    return bfBusNormaliserTexte(bfBusEl("siteSelect")?.value);
+  }
+
+  function bfBusEstDsiTende() {
+    return bfBusMissionSiteKey() === "dsi tende";
+  }
+
+  function bfBusEstSiteCompatible() {
+    return BF_BUS_ALLOWED_SITES.has(bfBusMissionSiteKey());
+  }
+
+  function bfBusActionChoisie() {
+    return bfBusNormaliserTexte(bfBusEl("type_action")?.value) === "bus";
+  }
+
+  function bfBusSiteSelectionne() {
+    if (bfBusMissionSiteKey() === "breil") return "breil";
+    if (!bfBusEstDsiTende()) return "";
+    return bfBusEl("bfBusSiteSelect")?.value || "";
+  }
+
+  function bfBusMettreAJourLibelles() {
+    const panelTitle = bfBusEl("bfBusPanelTitle");
+    const siteBlock = bfBusEl("bfBusSiteBlock");
+    const selectedSite = bfBusSiteSelectionne();
+
+    if (siteBlock) {
+      siteBlock.style.display = bfBusEstDsiTende() ? "block" : "none";
+    }
+
+    if (!panelTitle) return;
+
+    if (bfBusMissionSiteKey() === "breil") {
+      panelTitle.innerHTML = '<i class="fas fa-bus"></i> Bus Zest à Breil-sur-Roya';
+    } else if (bfBusEstDsiTende() && selectedSite) {
+      panelTitle.innerHTML = `<i class="fas fa-bus"></i> Bus Zest — ${bfBusEchapperHtml(BF_BUS_SITE_LABELS[selectedSite] || selectedSite)}`;
+    } else {
+      panelTitle.innerHTML = '<i class="fas fa-bus"></i> Bus Zest du secteur DSI Tende';
+    }
+  }
+
+  function bfBusSetStatus(message, type) {
+    const el = bfBusEl("bfBusZestStatus");
+    if (!el) return;
+    el.className = type || "info";
+    el.textContent = message || "";
+    el.style.display = message ? "block" : "none";
+  }
+
+  function bfBusEffacerSelection(render = true) {
+    bfBusState.selection = null;
+    window.BF_BUS_SELECTION = null;
+    bfBusAfficherSelection();
+    if (render) bfBusRendreListe();
+  }
+
+  function bfBusEffacerResultats(message = "") {
+    bfBusState.events = [];
+    bfBusState.response = null;
+    bfBusState.lastQuerySignature = "";
+    bfBusState.othersExpanded = false;
+    bfBusEffacerSelection(false);
+
+    const list = bfBusEl("bfBusZestList");
+    if (list) list.innerHTML = "";
+
+    if (message) bfBusSetStatus(message, "info");
+  }
+
+  function bfBusMajVisibilite() {
+    const panel = bfBusEl("bfBusZestPanel");
+    if (!panel) return;
+
+    const doitAfficher =
+      bfBusEstSiteCompatible() &&
+      bfBusActionChoisie() &&
+      !bfBusState.panelClosed;
+
+    panel.style.display = doitAfficher ? "block" : "none";
+    bfBusMettreAJourLibelles();
+
+    if (!doitAfficher) return;
+
+    if (bfBusEstDsiTende() && !bfBusSiteSelectionne()) {
+      bfBusSetStatus(
+        "Choisis d’abord l’arrêt ou le secteur du contrôle, puis appuie sur « Consulter les bus ».",
+        "info"
+      );
+    } else if (!bfBusState.events.length && !bfBusState.loading) {
+      bfBusSetStatus(
+        "Appuie sur « Consulter les bus » pour afficher les passages compris dans les horaires de la mission.",
+        "info"
+      );
+    }
+  }
+
+  function bfBusFermerPanel() {
+    bfBusState.panelClosed = true;
+    const panel = bfBusEl("bfBusZestPanel");
+    if (panel) panel.style.display = "none";
+  }
+
+  function bfBusMissionData() {
+    const date = bfBusEl("dateInput")?.value || "";
+    const start = bfBusEl("heureDebutInput")?.value || "";
+    const end = bfBusEl("heureFinInput")?.value || "";
+
+    if (!date || !start || !end) return null;
+    return { date, start, end };
+  }
+
+  function bfBusQuerySignature() {
+    const mission = bfBusMissionData();
+    return [
+      bfBusMissionSiteKey(),
+      bfBusSiteSelectionne(),
+      mission?.date || "",
+      mission?.start || "",
+      mission?.end || ""
+    ].join("|");
+  }
+
+  async function bfBusFetchJson(url) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 25000);
+
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: { "Accept": "application/json" },
+        cache: "no-store",
+        signal: controller.signal
+      });
+
+      const text = await response.text();
+      let data = null;
+
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch (_) {
+        throw new Error("Le Worker bus n’a pas renvoyé de JSON valide.");
+      }
+
+      if (!response.ok || !data?.ok) {
+        const error = new Error(data?.error || `Erreur HTTP ${response.status}`);
+        error.status = response.status;
+        error.details = data;
+        throw error;
+      }
+
+      return data;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  function bfBusInfoPassage(event) {
+    return (
+      event?.expectedDeparture ||
+      event?.expectedArrival ||
+      event?.scheduledDeparture ||
+      event?.scheduledArrival ||
+      null
+    );
+  }
+
+  function bfBusInfoTheorique(event) {
+    return event?.scheduledDeparture || event?.scheduledArrival || null;
+  }
+
+  function bfBusInfoActualisee(event) {
+    return event?.expectedDeparture || event?.expectedArrival || null;
+  }
+
+  function bfBusEpoch(event) {
+    const info = bfBusInfoPassage(event);
+    const epoch = Number(info?.epochSeconds);
+    return Number.isFinite(epoch) ? epoch : Number.MAX_SAFE_INTEGER;
+  }
+
+  function bfBusHeureInputDepuisInfo(info) {
+    const epoch = Number(info?.epochSeconds);
+
+    if (Number.isFinite(epoch) && epoch > 0) {
+      const parts = new Intl.DateTimeFormat("fr-FR", {
+        timeZone: "Europe/Paris",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23"
+      }).formatToParts(new Date(epoch * 1000));
+
+      const values = {};
+      parts.forEach(part => {
+        if (part.type !== "literal") values[part.type] = part.value;
+      });
+
+      if (values.hour && values.minute) {
+        return `${values.hour}:${values.minute}`;
+      }
+    }
+
+    const serviceTime = String(info?.serviceTime || "");
+    const match = serviceTime.match(/^(\d{1,2}):(\d{2})/);
+
+    if (match) {
+      const hour = Number(match[1]) % 24;
+      return `${String(hour).padStart(2, "0")}:${match[2]}`;
+    }
+
+    return "";
+  }
+
+  function bfBusFormatHeure(info) {
+    const value = bfBusHeureInputDepuisInfo(info);
+    if (!value) return "--h--";
+    const [hour, minute] = value.split(":");
+    return `${Number(hour)}h${minute}`;
+  }
+
+  function bfBusDirectionLisible(value) {
+    const raw = String(value || "").trim();
+    const normalized = bfBusNormaliserTexte(raw);
+
+    if (normalized === "gare routiere") return "Menton — Gare routière";
+    if (normalized === "breil gare") return "Breil Gare";
+    if (normalized === "tende") return "Tende";
+
+    return raw || "Destination non communiquée";
+  }
+
+  function bfBusSourceLisible(event) {
+    if (event?.source === "temps_reel_modifie") return "Temps réel actualisé";
+    if (event?.source === "temps_reel") return "Temps réel";
+    return "Horaire théorique";
+  }
+
+  function bfBusEstTheorique(event) {
+    return event?.source === "theorique";
+  }
+
+  function bfBusEstAnnule(event) {
+    const relationship = String(event?.scheduleRelationship || "").toUpperCase();
+    return relationship === "CANCELED" || relationship === "DELETED" || relationship === "SKIPPED";
+  }
+
+  function bfBusMinutesDepuisHeure(value) {
+    const match = String(value || "").match(/^(\d{1,2}):(\d{2})$/);
+    if (!match) return null;
+    return Number(match[1]) * 60 + Number(match[2]);
+  }
+
+  function bfBusEcartAvecControle(event) {
+    const control = bfBusMinutesDepuisHeure(bfBusEl("heure_action")?.value);
+    const passage = bfBusMinutesDepuisHeure(
+      bfBusHeureInputDepuisInfo(bfBusInfoPassage(event))
+    );
+
+    if (control === null || passage === null) return null;
+
+    const direct = Math.abs(control - passage);
+    return Math.min(direct, 1440 - direct);
+  }
+
+  function bfBusDescription(event) {
+    const line = event?.line ? `ligne ${event.line}` : "";
+    const direction = bfBusDirectionLisible(event?.direction);
+    const stop = event?.stopName || BF_BUS_SITE_LABELS[bfBusSiteSelectionne()] || "arrêt non communiqué";
+
+    return [
+      "Bus Zest",
+      line,
+      `direction ${direction}`,
+      `arrêt ${stop}`
+    ].filter(Boolean).join(" — ");
+  }
+
+  function bfBusNoteSource(event) {
+    const delay = Number(event?.delayMinutes);
+    const source = event?.source || "";
+
+    if (source === "temps_reel_modifie") {
+      if (Number.isFinite(delay) && delay > 0) return `passage actualisé, retard +${delay} min`;
+      if (Number.isFinite(delay) && delay < 0) return `passage actualisé, avance ${delay} min`;
+      return "passage actualisé en temps réel";
+    }
+
+    if (source === "temps_reel") return "passage confirmé en temps réel";
+    return "horaire théorique";
+  }
+
+  function bfBusSelectionner(eventId) {
+    if (
+      bfBusState.lastQuerySignature &&
+      bfBusState.lastQuerySignature !== bfBusQuerySignature()
+    ) {
+      bfBusEffacerResultats(
+        "Les informations de mission ont changé : relance la consultation des bus."
+      );
+      return;
+    }
+
+    const event = bfBusState.events.find(item => String(item.eventId) === String(eventId));
+    if (!event || bfBusEstAnnule(event)) return;
+
+    const passageInfo = bfBusInfoPassage(event);
+    const heure = bfBusHeureInputDepuisInfo(passageInfo);
+
+    const selection = {
+      eventId: event.eventId,
+      line: event.line || "",
+      direction: bfBusDirectionLisible(event.direction),
+      stopId: event.stopId || "",
+      stopName: event.stopName || "",
+      source: event.source || "theorique",
+      theoretical: bfBusEstTheorique(event),
+      delayMinutes: Number.isFinite(Number(event.delayMinutes))
+        ? Number(event.delayMinutes)
+        : null,
+      scheduledTime: bfBusFormatHeure(bfBusInfoTheorique(event)),
+      actualTime: bfBusFormatHeure(passageInfo),
+      heureInput: heure,
+      description: bfBusDescription(event),
+      sourceNote: bfBusNoteSource(event)
+    };
+
+    bfBusState.selection = selection;
+    window.BF_BUS_SELECTION = selection;
+
+    const heureInput = bfBusEl("heure_action");
+    if (heureInput && !heureInput.value && selection.heureInput) {
+      heureInput.value = selection.heureInput;
+      heureInput.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+
+    // Mettre 0 par défaut garantit qu'un bus sélectionné comptera bien
+    // comme un moyen contrôlé même si aucune personne n'est contrôlée.
+    const controles = bfBusEl("nb_controles");
+    const descendus = bfBusEl("nb_descendus");
+    if (controles && controles.value === "") controles.value = "0";
+    if (descendus && descendus.value === "") descendus.value = "0";
+
+    bfBusAfficherSelection();
+    bfBusRendreListe();
+  }
+
+  function bfBusAfficherSelection() {
+    const el = bfBusEl("bfBusZestSelected");
+    const selection = bfBusState.selection;
+    if (!el) return;
+
+    if (!selection) {
+      el.style.display = "none";
+      el.innerHTML = "";
+      return;
+    }
+
+    const sourceDetail = selection.theoretical
+      ? "Horaire théorique : les perturbations restent à vérifier le jour du service."
+      : `${selection.sourceNote}.`;
+
+    el.style.display = "block";
+    el.innerHTML = `
+      <strong>Bus sélectionné :</strong><br>
+      ${bfBusEchapperHtml(selection.description)}<br>
+      Passage retenu : ${bfBusEchapperHtml(selection.actualTime)}
+      <br><small>${bfBusEchapperHtml(sourceDetail)}</small>
+      <br><button type="button" id="bfBusZestClearSelectionBtn">Annuler la sélection</button>
+    `;
+
+    bfBusEl("bfBusZestClearSelectionBtn")?.addEventListener(
+      "click",
+      () => bfBusEffacerSelection(true)
+    );
+  }
+
+  function bfBusCardHtml(event, near) {
+    const selected =
+      String(bfBusState.selection?.eventId || "") === String(event.eventId || "");
+    const cancelled = bfBusEstAnnule(event);
+    const actual = bfBusInfoActualisee(event);
+    const scheduled = bfBusInfoTheorique(event);
+    const passage = bfBusInfoPassage(event);
+    const source = bfBusSourceLisible(event);
+    const delay = Number(event?.delayMinutes);
+
+    let timeText = "";
+    if (cancelled) {
+      timeText = "Course annulée";
+    } else if (actual) {
+      timeText = `Passage prévu : ${bfBusFormatHeure(actual)}`;
+      if (scheduled) timeText += ` · théorique ${bfBusFormatHeure(scheduled)}`;
+    } else {
+      timeText = `Passage théorique : ${bfBusFormatHeure(passage)}`;
+    }
+
+    let delayText = "";
+    if (Number.isFinite(delay) && delay > 0) delayText = `Retard : +${delay} min`;
+    else if (Number.isFinite(delay) && delay < 0) delayText = `Avance : ${delay} min`;
+    else if (Number.isFinite(delay) && !bfBusEstTheorique(event)) delayText = "À l’heure";
+
+    const distance = bfBusEcartAvecControle(event);
+    const distanceText =
+      distance !== null ? `Écart avec l’heure saisie : ${distance} min` : "";
+
+    const sourceClass = bfBusEstTheorique(event)
+      ? "bf-bus-source-theoretical"
+      : "bf-bus-source-live";
+
+    const vehicleText = event?.vehicle?.position
+      ? " · véhicule localisé"
+      : "";
+
+    const button = cancelled
+      ? ""
+      : `<button type="button" data-bf-bus-event="${bfBusEchapperHtml(event.eventId)}">
+           <i class="fas fa-check"></i> Sélectionner ce bus
+         </button>`;
+
+    return `
+      <div class="bf-bus-card${near ? " near" : ""}${selected ? " selected" : ""}${cancelled ? " cancelled" : ""}">
+        <div class="bf-bus-title">
+          Ligne ${bfBusEchapperHtml(event.line || "?")} — direction ${bfBusEchapperHtml(bfBusDirectionLisible(event.direction))}
+        </div>
+        <div class="bf-bus-route">
+          <i class="fas fa-location-dot"></i> ${bfBusEchapperHtml(event.stopName || "Arrêt non communiqué")}
+        </div>
+        <div class="bf-bus-time">${bfBusEchapperHtml(timeText)}</div>
+        <div class="bf-bus-meta">
+          <span class="${sourceClass}">${bfBusEchapperHtml(source)}</span>
+          ${delayText ? ` · ${bfBusEchapperHtml(delayText)}` : ""}
+          ${vehicleText}
+          ${distanceText ? `<br>${bfBusEchapperHtml(distanceText)}` : ""}
+        </div>
+        ${button}
+      </div>
+    `;
+  }
+
+  function bfBusInstallerBoutonsListe() {
+    const list = bfBusEl("bfBusZestList");
+    if (!list) return;
+
+    list.querySelectorAll("button[data-bf-bus-event]").forEach(button => {
+      button.addEventListener("click", () => {
+        bfBusSelectionner(button.dataset.bfBusEvent);
+      });
+    });
+
+    list.querySelector("[data-bf-bus-others-toggle]")?.addEventListener("click", () => {
+      bfBusState.othersExpanded = !bfBusState.othersExpanded;
+      bfBusRendreListe();
+    });
+  }
+
+  function bfBusRendreListe() {
+    const list = bfBusEl("bfBusZestList");
+    if (!list) return;
+
+    if (!bfBusState.events.length) {
+      list.innerHTML = "";
+      return;
+    }
+
+    const hasControlTime = Boolean(bfBusEl("heure_action")?.value);
+    const near = [];
+    const others = [];
+
+    bfBusState.events
+      .slice()
+      .sort((a, b) => bfBusEpoch(a) - bfBusEpoch(b))
+      .forEach(event => {
+        const distance = bfBusEcartAvecControle(event);
+        if (
+          hasControlTime &&
+          distance !== null &&
+          distance <= BF_BUS_MARGIN_MINUTES
+        ) {
+          near.push(event);
+        } else {
+          others.push(event);
+        }
+      });
+
+    const html = [];
+
+    if (hasControlTime) {
+      html.push(
+        `<div class="bf-bus-section-title">Autour de ${bfBusEchapperHtml(bfBusEl("heure_action")?.value || "")} (± ${BF_BUS_MARGIN_MINUTES} min)</div>`
+      );
+
+      if (near.length) {
+        near.forEach(event => html.push(bfBusCardHtml(event, true)));
+      } else {
+        html.push(
+          `<div class="bf-bus-empty">Aucun bus trouvé à moins de ${BF_BUS_MARGIN_MINUTES} minutes de l’heure saisie.</div>`
+        );
+      }
+
+      if (others.length) {
+        const expanded = bfBusState.othersExpanded;
+        html.push(`
+          <button type="button"
+                  class="bf-bus-others-toggle"
+                  data-bf-bus-others-toggle
+                  aria-expanded="${expanded ? "true" : "false"}">
+            <span>Autres bus pendant le service (${others.length})</span>
+            <span class="bf-bus-toggle-sign" aria-hidden="true">${expanded ? "−" : "+"}</span>
+          </button>
+          <div class="bf-bus-others-list"${expanded ? "" : " hidden"}>
+            ${others.map(event => bfBusCardHtml(event, false)).join("")}
+          </div>
+        `);
+      }
+    } else {
+      html.push('<div class="bf-bus-section-title">Bus pendant le service</div>');
+      bfBusState.events.forEach(event => html.push(bfBusCardHtml(event, false)));
+    }
+
+    list.innerHTML = html.join("");
+    bfBusInstallerBoutonsListe();
+  }
+
+  async function bfBusConsulter() {
+    if (!bfBusEstSiteCompatible() || !bfBusActionChoisie()) return;
+    if (bfBusState.loading) return;
+
+    const site = bfBusSiteSelectionne();
+    const mission = bfBusMissionData();
+
+    if (!site) {
+      bfBusEffacerResultats();
+      bfBusSetStatus(
+        "Choisis d’abord l’arrêt ou le secteur du contrôle.",
+        "warning"
+      );
+      return;
+    }
+
+    if (!mission) {
+      bfBusEffacerResultats();
+      bfBusSetStatus(
+        "La date et les horaires de mission sont incomplets.",
+        "warning"
+      );
+      return;
+    }
+
+    if (!navigator.onLine) {
+      bfBusSetStatus(
+        "Aucune connexion Internet. La saisie manuelle reste disponible.",
+        "error"
+      );
+      return;
+    }
+
+    bfBusState.loading = true;
+    bfBusEffacerSelection(false);
+    const list = bfBusEl("bfBusZestList");
+    if (list) list.innerHTML = "";
+    bfBusSetStatus("Consultation des horaires Zest en cours…", "info");
+
+    const params = new URLSearchParams({
+      site,
+      line: "all",
+      date: mission.date,
+      start: mission.start,
+      end: mission.end,
+      _: String(Date.now())
+    });
+
+    try {
+      const data = await bfBusFetchJson(
+        `${BF_BUS_WORKER_BASE}/api/bus?${params.toString()}`
+      );
+
+      const events = Array.isArray(data.events)
+        ? data.events.slice().sort((a, b) => bfBusEpoch(a) - bfBusEpoch(b))
+        : [];
+
+      bfBusState.events = events;
+      bfBusState.response = data;
+      bfBusState.lastQuerySignature = bfBusQuerySignature();
+      bfBusState.othersExpanded = false;
+
+      const liveCount = events.filter(
+        event => event.source === "temps_reel" || event.source === "temps_reel_modifie"
+      ).length;
+      const theoreticalCount = events.filter(
+        event => event.source === "theorique"
+      ).length;
+      const cancelledCount = events.filter(bfBusEstAnnule).length;
+      const siteLabel = BF_BUS_SITE_LABELS[site] || data?.query?.siteLabel || site;
+      const warnings = Array.isArray(data.warnings) ? data.warnings.filter(Boolean) : [];
+
+      if (!events.length) {
+        bfBusSetStatus(
+          `Aucun bus Zest trouvé à ${siteLabel} dans les horaires de cette mission.`,
+          "warning"
+        );
+        if (list) {
+          list.innerHTML =
+            '<div class="bf-bus-empty">Aucun passage correspondant à la date, au secteur et aux horaires de mission.</div>';
+        }
+      } else {
+        let message =
+          `${events.length} passage${events.length > 1 ? "s" : ""} trouvé${events.length > 1 ? "s" : ""} à ${siteLabel} : ` +
+          `${liveCount} en temps réel et ${theoreticalCount} horaire${theoreticalCount > 1 ? "s" : ""} théorique${theoreticalCount > 1 ? "s" : ""}.`;
+
+        if (cancelledCount) {
+          message += ` ${cancelledCount} course${cancelledCount > 1 ? "s" : ""} annulée${cancelledCount > 1 ? "s" : ""}.`;
+        }
+
+        if (warnings.length) {
+          message += ` Information : ${warnings.join(" ")}`;
+        }
+
+        bfBusSetStatus(message, "success");
+        bfBusRendreListe();
+      }
+    } catch (error) {
+      console.error("Consultation bus Zest :", error);
+      bfBusEffacerResultats();
+
+      if (error?.name === "AbortError") {
+        bfBusSetStatus(
+          "Le Worker bus met trop de temps à répondre. Réessaie dans quelques instants ; la saisie manuelle reste disponible.",
+          "error"
+        );
+      } else {
+        bfBusSetStatus(
+          "Impossible de consulter les bus Zest. Vérifie que le Worker Cloudflare bus est bien déployé ; la saisie manuelle reste disponible.",
+          "error"
+        );
+      }
+    } finally {
+      bfBusState.loading = false;
+    }
+  }
+
+  function bfBusInstallerAjoutDeroulement() {
+    const originalMaj = window.majAffichageComptage;
+
+    if (typeof originalMaj === "function" && !originalMaj.__bfBusWrapped) {
+      const wrappedMajAffichage = function () {
+        const result = originalMaj.apply(this, arguments);
+        bfBusMajVisibilite();
+        return result;
+      };
+
+      wrappedMajAffichage.__bfBusWrapped = true;
+      window.majAffichageComptage = wrappedMajAffichage;
+    }
+
+    const originalAjouter = window.ajouterDeroulementFlex;
+    if (
+      typeof originalAjouter !== "function" ||
+      originalAjouter.__bfBusWrapped
+    ) {
+      return;
+    }
+
+    function wrappedAjouterDeroulementFlex() {
+      const selection = window.BF_BUS_SELECTION;
+      const action = bfBusNormaliserTexte(
+        bfBusEl("type_action")?.value
+      );
+
+      if (
+        !(
+          selection &&
+          bfBusEstSiteCompatible() &&
+          action === "bus"
+        )
+      ) {
+        return originalAjouter.apply(this, arguments);
+      }
+
+      if (!navigator.onLine && !selection.theoretical) {
+        bfBusEffacerSelection(true);
+        bfBusSetStatus(
+          "La connexion Internet n’est plus disponible. La sélection en temps réel a été retirée.",
+          "error"
+        );
+        appAlert(
+          "La connexion Internet n’est plus disponible. Le bus en temps réel a été effacé pour éviter d’utiliser une information ancienne."
+        );
+        return;
+      }
+
+      if (
+        bfBusState.lastQuerySignature &&
+        bfBusState.lastQuerySignature !== bfBusQuerySignature()
+      ) {
+        bfBusEffacerResultats(
+          "Les informations de mission ont changé : relance la consultation des bus."
+        );
+        appAlert(
+          "La date, les horaires ou le secteur de mission ont changé. Relance la consultation avant d’ajouter le bus."
+        );
+        return;
+      }
+
+      const zone = bfBusEl("deroulement");
+      if (!zone) {
+        appAlert("⚠️ Zone 'Déroulement' introuvable.");
+        return;
+      }
+
+      const heure = bfBusEl("heure_action")?.value || selection.heureInput || "";
+      const infosupp = (bfBusEl("esi_select")?.value || "").trim();
+      const libre = (bfBusEl("texte_libre")?.value || "").trim();
+      const nbCtrl = bfBusEl("nb_controles")?.value;
+      const nbDesc = bfBusEl("nb_descendus")?.value;
+
+      const descriptionBus = [
+        selection.description,
+        selection.sourceNote
+      ].filter(Boolean).join(" — ");
+
+      const corps =
+        typeof window.triJoin === "function"
+          ? window.triJoin([descriptionBus, infosupp, libre])
+          : [descriptionBus, infosupp, libre].filter(Boolean).join(" — ");
+
+      const suffix =
+        typeof window.buildSuffixComptage === "function"
+          ? window.buildSuffixComptage(
+              nbCtrl === "" ? "0" : nbCtrl,
+              nbDesc === "" ? "0" : nbDesc
+            )
+          : "";
+
+      const ligne =
+        (typeof window.triJoin === "function"
+          ? window.triJoin([heure, corps])
+          : [heure, corps].filter(Boolean).join(" — ")) + suffix;
+
+      zone.value = zone.value.trim()
+        ? `${zone.value}\n${ligne}`
+        : ligne;
+
+      zone.dispatchEvent(new Event("input", { bubbles: true }));
+
+      [
+        "heure_action",
+        "type_action",
+        "esi_select",
+        "texte_libre",
+        "nb_controles",
+        "nb_descendus"
+      ].forEach(id => {
+        const el = bfBusEl(id);
+        if (el) el.value = "";
+      });
+
+      bfBusEffacerSelection(true);
+
+      if (typeof window.majAffichageComptage === "function") {
+        window.majAffichageComptage();
+      }
+
+      bfBusMajVisibilite();
+    }
+
+    wrappedAjouterDeroulementFlex.__bfBusWrapped = true;
+    window.ajouterDeroulementFlex = wrappedAjouterDeroulementFlex;
+  }
+
+  function bfBusInstallerEvenements() {
+    bfBusEl("bfBusZestRefreshBtn")?.addEventListener("click", bfBusConsulter);
+    bfBusEl("bfBusZestCloseBtn")?.addEventListener("click", bfBusFermerPanel);
+
+    bfBusEl("type_action")?.addEventListener("change", () => {
+      const isBus = bfBusActionChoisie();
+
+      if (isBus && !bfBusState.lastActionWasBus) {
+        bfBusState.panelClosed = false;
+      }
+
+      if (!isBus) {
+        bfBusEffacerSelection(false);
+      }
+
+      bfBusState.lastActionWasBus = isBus;
+      bfBusMajVisibilite();
+    });
+
+    bfBusEl("bfBusSiteSelect")?.addEventListener("change", () => {
+      bfBusEffacerResultats(
+        "Le secteur a changé. Appuie sur « Consulter les bus » pour charger les nouveaux passages."
+      );
+      bfBusMettreAJourLibelles();
+      bfBusMajVisibilite();
+    });
+
+    bfBusEl("siteSelect")?.addEventListener("change", () => {
+      const select = bfBusEl("bfBusSiteSelect");
+      if (select && bfBusEstDsiTende()) select.value = "";
+      bfBusEffacerResultats(
+        "Les résultats bus ont été effacés après le changement de site."
+      );
+      bfBusMettreAJourLibelles();
+      bfBusMajVisibilite();
+    });
+
+    ["dateInput", "heureDebutInput", "heureFinInput"].forEach(id => {
+      bfBusEl(id)?.addEventListener("change", () => {
+        if (bfBusState.events.length || bfBusState.selection) {
+          bfBusEffacerResultats(
+            "Les horaires de mission ont changé : relance la consultation des bus."
+          );
+        }
+      });
+    });
+
+    bfBusEl("heure_action")?.addEventListener("input", () => {
+      if (bfBusState.events.length) bfBusRendreListe();
+    });
+
+    window.addEventListener("offline", () => {
+      if (!bfBusEstSiteCompatible() || !bfBusActionChoisie()) return;
+
+      if (bfBusState.selection && !bfBusState.selection.theoretical) {
+        bfBusEffacerSelection(false);
+      }
+
+      const theoreticalEvents = bfBusState.events.filter(
+        event => bfBusEstTheorique(event)
+      );
+
+      bfBusState.events = theoreticalEvents;
+
+      if (theoreticalEvents.length) {
+        bfBusSetStatus(
+          "Aucune connexion Internet : les données en temps réel ont été retirées. Les horaires théoriques déjà chargés restent disponibles.",
+          "warning"
+        );
+        bfBusRendreListe();
+      } else {
+        bfBusEffacerResultats();
+        bfBusSetStatus(
+          "Aucune connexion Internet. La saisie manuelle reste disponible.",
+          "error"
+        );
+      }
+    });
+
+    window.addEventListener("online", () => {
+      if (
+        bfBusEstSiteCompatible() &&
+        bfBusActionChoisie() &&
+        !bfBusState.events.length
+      ) {
+        bfBusSetStatus(
+          "Connexion rétablie. Appuie sur « Consulter les bus » pour actualiser la liste.",
+          "success"
+        );
+      }
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    bfBusInstallerAjoutDeroulement();
+    bfBusInstallerEvenements();
+    bfBusMettreAJourLibelles();
+    bfBusMajVisibilite();
   });
 })();
 </script>
