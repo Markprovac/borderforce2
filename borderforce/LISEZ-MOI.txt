@@ -1,22 +1,17 @@
-BORDER FORCE — CONFIRMATION D'ENVOI COMPACTE
+BORDER FORCE — ACTIONS TRAIN / BUS
 
 Fichier de départ :
-index_BorderForce_bus_Zest_didacticiel_corrige.html
+index(25).html
 
-Seule la partie « confirmation d'envoi / fin de mission » a été modifiée.
+Seule la liste « Action prédéfinie » du déroulement a été modifiée.
 
 Nouveau fonctionnement :
-- petite ligne de statut au lieu de la grande carte ;
-- bouton « Marquer comme envoyé » en un seul appui ;
-- après modification : « Confirmer le nouvel envoi » ;
-- aucune question automatique après Copier ;
-- aucune question automatique au retour de WhatsApp ;
-- le bouton Copier affiche brièvement « Copié » sans fenêtre ;
-- compte rendu déjà confirmé : une seule confirmation de fin de mission ;
-- compte rendu non confirmé ou modifié : une seule fenêtre avec :
-  1. Retour au compte rendu ;
-  2. J'ai envoyé — terminer la mission ;
-  3. Terminer sans envoi ;
-- aucun second message « Mission terminée » à valider.
-
-Les bus Zest, le didacticiel et toutes les autres fonctions restent inchangés.
+- TRAIN est écrit en majuscules et en gras ;
+- BUS est écrit en majuscules et en gras ;
+- TRAIN et BUS apparaissent pour Breil ;
+- TRAIN et BUS apparaissent pour DSI Tende ;
+- TRAIN et BUS sont complètement retirés pour La Turbie ;
+- lorsque TRAIN ou BUS est sélectionné, le champ entier est renforcé
+  visuellement en gras ;
+- les valeurs techniques restent « Train » et « Bus », donc les fonctions
+  de consultation, de déroulement et de comptage restent inchangées.

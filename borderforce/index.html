@@ -1957,6 +1957,21 @@ button.whatsapp:hover {
   }
 }
 
+
+/* === Action prédéfinie : mise en évidence de TRAIN et BUS === */
+#type_action option[data-bf-transport-action] {
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+#type_action.bf-transport-action-selected {
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #003366;
+  border: 2px solid #003366;
+  background: #edf5ff;
+}
+
 </style>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
@@ -2895,8 +2910,8 @@ button.whatsapp:hover {
       <option value="">— Sélectionner —</option>
 
       <optgroup label="Déplacements / mission">
-	  <option>Train</option>
-        <option>Bus</option>
+        <option value="Train" data-bf-transport-action="train">TRAIN</option>
+        <option value="Bus" data-bf-transport-action="bus">BUS</option>
         <option>Départ de la caserne Ausseur</option>
         <option>Arrivée à la caserne Ausseur</option>
         <option>Départ en mission</option>
@@ -11492,6 +11507,119 @@ function cleanMrzText(){
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/mrz@3/dist/mrz.umd.js"></script>
+
+
+<script id="bfTrainBusActionVisibility">
+/* Action prédéfinie :
+   TRAIN et BUS seulement pour Breil et DSI Tende. */
+(function () {
+  "use strict";
+
+  const TRANSPORT_ACTIONS = [
+    { key: "train", value: "Train", label: "TRAIN" },
+    { key: "bus", value: "Bus", label: "BUS" }
+  ];
+
+  function normalize(value) {
+    return String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ");
+  }
+
+  function transportActionsAllowed() {
+    const siteSelect = document.getElementById("siteSelect");
+    const site = normalize(
+      siteSelect?.value ||
+      window.BF_MISSION_SESSION?.site ||
+      ""
+    );
+
+    return site === "breil" || site === "dsi tende";
+  }
+
+  function findMissionOptgroup(select) {
+    return Array.from(select?.children || []).find(element =>
+      element.tagName === "OPTGROUP" &&
+      normalize(element.label).includes("deplacements")
+    ) || select?.querySelector("optgroup") || null;
+  }
+
+  function createTransportOption(definition) {
+    const option = document.createElement("option");
+    option.value = definition.value;
+    option.textContent = definition.label;
+    option.dataset.bfTransportAction = definition.key;
+    option.style.fontWeight = "900";
+    return option;
+  }
+
+  function updateSelectedStyle() {
+    const select = document.getElementById("type_action");
+    if (!select) return;
+
+    const selected = normalize(select.value);
+    select.classList.toggle(
+      "bf-transport-action-selected",
+      selected === "train" || selected === "bus"
+    );
+  }
+
+  function syncTransportActions() {
+    const select = document.getElementById("type_action");
+    if (!select) return;
+
+    const group = findMissionOptgroup(select);
+    if (!group) return;
+
+    const allowed = transportActionsAllowed();
+    const currentValue = normalize(select.value);
+
+    // Retire toujours d'abord les éventuels doublons.
+    group
+      .querySelectorAll("option[data-bf-transport-action]")
+      .forEach(option => option.remove());
+
+    if (allowed) {
+      const firstNormalOption = group.querySelector("option");
+
+      TRANSPORT_ACTIONS.forEach(definition => {
+        const option = createTransportOption(definition);
+        group.insertBefore(option, firstNormalOption);
+      });
+    } else if (currentValue === "train" || currentValue === "bus") {
+      // Sécurité si une ancienne valeur Train/Bus était encore sélectionnée.
+      select.value = "";
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    updateSelectedStyle();
+
+    if (typeof window.majAffichageComptage === "function") {
+      window.majAffichageComptage();
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const actionSelect = document.getElementById("type_action");
+    const siteSelect = document.getElementById("siteSelect");
+
+    actionSelect?.addEventListener("change", updateSelectedStyle);
+    siteSelect?.addEventListener("change", syncTransportActions);
+    siteSelect?.addEventListener("input", syncTransportActions);
+
+    // Le premier passage intervient après le chargement de la mission
+    // verrouillée dans les champs techniques.
+    syncTransportActions();
+    window.setTimeout(syncTransportActions, 0);
+    window.setTimeout(syncTransportActions, 500);
+  });
+
+  window.bfActualiserActionsTrainBusSelonSite = syncTransportActions;
+})();
+</script>
 
 </body>
 </html>
