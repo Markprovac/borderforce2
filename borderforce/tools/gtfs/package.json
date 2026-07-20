@@ -1,0 +1,12 @@
+{
+  "name": "borderforce-gtfs-builder",
+  "version": "8.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build-schedule.mjs"
+  },
+  "dependencies": {
+    "fflate": "0.8.3"
+  }
+}
