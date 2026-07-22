@@ -1977,122 +1977,124 @@ button.whatsapp:hover {
    ALERTES TRAINS THÉORIQUES — Cloudflare + Web Push
    Les alertes n'utilisent jamais la clé API SNCF.
    ========================================================= */
-.bf-train-alert-card {
-  margin: 12px 0;
-  padding: 13px;
-  border: 2px solid #7c3aed;
-  border-radius: 14px;
+.bf-train-alert-compact {
+  display: none;
+  margin: 0 0 13px 0;
+  padding: 11px 12px;
+  border: 1px solid #b9a4df;
+  border-radius: 13px;
   background: #faf7ff;
-  box-shadow: 0 3px 10px rgba(124, 58, 237, .10);
+  box-shadow: 0 3px 9px rgba(124, 58, 237, .09);
 }
 
-.bf-train-alert-card h4 {
-  margin: 0 0 6px 0;
-  color: #4c1d95;
-  font-size: 1em;
+.bf-train-alert-compact.visible { display: block; }
+
+.bf-train-alert-compact-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
 }
 
-.bf-train-alert-card p {
-  margin: 5px 0;
-  color: #51445f;
-  font-size: .86em;
-  line-height: 1.4;
+.bf-train-alert-compact-icon {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ede9fe;
+  color: #5b21b6;
 }
 
-.bf-train-alert-controls {
-  display: grid;
-  grid-template-columns: minmax(120px, 1fr) minmax(150px, 1fr);
-  gap: 8px;
-  align-items: end;
+.bf-train-alert-compact-text { flex: 1; min-width: 0; }
+.bf-train-alert-compact-title {
+  display: block;
+  color: #3b176f;
+  font-size: .91em;
+  font-weight: 900;
+}
+.bf-train-alert-compact-detail {
+  display: block;
+  margin-top: 2px;
+  color: #5b4b6d;
+  font-size: .78em;
+  line-height: 1.3;
+}
+
+.bf-train-alert-compact-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
   margin-top: 9px;
 }
-
-.bf-train-alert-controls label {
+.bf-train-alert-compact-actions button {
+  flex: 1 1 130px;
+  min-height: 36px;
   margin: 0;
-  color: #4c1d95;
-  font-size: .84em;
-  font-weight: 800;
-}
-
-.bf-train-alert-controls select {
-  margin: 4px 0 0 0;
-  min-height: 42px;
-  border: 1px solid #b9a4df;
-  background: #ffffff;
-}
-
-.bf-train-alert-buttons {
-  display: flex;
-  gap: 7px;
-  flex-wrap: wrap;
-}
-
-.bf-train-alert-buttons button {
-  flex: 1 1 150px;
-  min-height: 42px;
+  padding: 7px 9px;
   justify-content: center;
-  margin: 0;
-  border-radius: 11px;
+  border-radius: 9px;
+  font-size: .82em;
 }
-
-#bfTrainAlertActivateBtn {
-  background: #6d28d9;
-  color: #ffffff;
-}
-
-#bfTrainAlertDeactivateBtn {
-  display: none;
-  background: #6b7280;
-  color: #ffffff;
-}
+#bfTrainAlertModifyBtn { background: #6d28d9; color: #fff; }
+#bfTrainAlertDeactivateBtn { background: #6b7280; color: #fff; }
 
 #bfTrainAlertStatus {
   display: none;
-  margin-top: 9px;
-  padding: 8px 9px;
+  margin-top: 8px;
+  padding: 7px 8px;
+  border-radius: 8px;
+  font-size: .78em;
+  line-height: 1.32;
+}
+#bfTrainAlertStatus.info { display:block; background:#eef2ff; border:1px solid #a5b4fc; color:#3730a3; }
+#bfTrainAlertStatus.success { display:block; background:#edf9f1; border:1px solid #9ed8af; color:#185b2b; }
+#bfTrainAlertStatus.warning { display:block; background:#fff7e6; border:1px solid #f0c46b; color:#7a4b00; }
+#bfTrainAlertStatus.error { display:block; background:#fff0f0; border:1px solid #e3a1a1; color:#8b1e1e; }
+
+#popupTrainAlerts .popup-box {
+  max-width: 430px;
+  text-align: left;
+}
+#popupTrainAlerts .bf-alert-popup-summary {
+  color: #dbeafe;
+  line-height: 1.42;
+}
+#popupTrainAlerts .bf-alert-popup-field {
+  margin: 12px 0;
+}
+#popupTrainAlerts label {
+  color: #fff;
+  font-size: .9em;
+  font-weight: 800;
+}
+#popupTrainAlerts select {
+  width: 100%;
+  min-height: 44px;
+  margin: 5px 0 0 0;
   border-radius: 9px;
-  font-size: .84em;
-  line-height: 1.35;
+  border: 1px solid #9fb6d1;
+  background: #fff;
 }
-
-#bfTrainAlertStatus.info {
-  display: block;
-  background: #eef2ff;
-  border: 1px solid #a5b4fc;
-  color: #3730a3;
+#popupTrainAlerts .popup-buttons {
+  flex-direction: column;
 }
-
-#bfTrainAlertStatus.success {
-  display: block;
-  background: #edf9f1;
-  border: 1px solid #9ed8af;
-  color: #185b2b;
+#popupTrainAlerts .popup-buttons button {
+  width: 100%;
+  flex: none;
+  justify-content: center;
 }
-
-#bfTrainAlertStatus.warning {
-  display: block;
-  background: #fff7e6;
-  border: 1px solid #f0c46b;
-  color: #7a4b00;
-}
-
-#bfTrainAlertStatus.error {
-  display: block;
-  background: #fff0f0;
-  border: 1px solid #e3a1a1;
-  color: #8b1e1e;
-}
-
-.bf-train-alert-live-note {
-  padding-top: 7px;
-  border-top: 1px dashed #c9b8e8;
-  color: #5b4b6d !important;
-}
-
-@media (max-width: 560px) {
-  .bf-train-alert-controls {
-    grid-template-columns: 1fr;
-  }
+#bfTrainAlertPopupAllBtn { background: #247a43; }
+#bfTrainAlertPopupSingleBtn,
+#bfTrainAlertPopupBreilBtn { background: #6d28d9; }
+#bfTrainAlertPopupSkipBtn { background: #4b5563; }
+#bfTrainAlertPopupProgress {
+  display: none;
+  margin: 10px 0 0 0;
+  color: #fde68a;
+  font-size: .86em;
+  text-align: center;
 }
 
 </style>
@@ -3019,6 +3021,21 @@ button.whatsapp:hover {
     <div class="page-title">Déroulement de la mission</div>
   </div>
   <div class="page-content">
+
+    <section id="bfTrainAlertCompactCard" class="bf-train-alert-compact" aria-live="polite">
+      <div class="bf-train-alert-compact-head">
+        <span class="bf-train-alert-compact-icon"><i class="fas fa-bell"></i></span>
+        <span class="bf-train-alert-compact-text">
+          <span id="bfTrainAlertCompactTitle" class="bf-train-alert-compact-title">Alertes trains non activées</span>
+          <span id="bfTrainAlertCompactDetail" class="bf-train-alert-compact-detail">Elles peuvent être activées pour cette mission.</span>
+        </span>
+      </div>
+      <div class="bf-train-alert-compact-actions">
+        <button id="bfTrainAlertModifyBtn" type="button"><i class="fas fa-sliders"></i> Activer / modifier</button>
+        <button id="bfTrainAlertDeactivateBtn" type="button"><i class="fas fa-bell-slash"></i> Arrêter</button>
+      </div>
+      <div id="bfTrainAlertStatus" role="status" aria-live="polite"></div>
+    </section>
   
  <!-- Saisie rapide Heure + Actions -->
 <section id="temps_action" style="margin-bottom:12px">
@@ -3071,43 +3088,7 @@ button.whatsapp:hover {
           La vue globale classe chronologiquement les trains des cinq gares et indique clairement la gare de passage.
         </div>
       </div>
-
-
-      <section id="bfTrainAlertCard" class="bf-train-alert-card" aria-labelledby="bfTrainAlertTitle">
-        <h4 id="bfTrainAlertTitle"><i class="fas fa-bell"></i> Alerte train prévu</h4>
-        <p>
-          Cloudflare surveille uniquement les horaires théoriques GTFS SNCF et Trenitalia pendant la mission.
-          Une notification peut arriver même lorsque Border Force n’est plus au premier plan.
-        </p>
-
-        <div class="bf-train-alert-controls">
-          <label for="bfTrainAlertDelay">
-            Prévenir avant le passage
-            <select id="bfTrainAlertDelay">
-              <option value="2">2 minutes avant</option>
-              <option value="5" selected>5 minutes avant</option>
-              <option value="10">10 minutes avant</option>
-              <option value="15">15 minutes avant</option>
-            </select>
-          </label>
-
-          <div class="bf-train-alert-buttons">
-            <button id="bfTrainAlertActivateBtn" type="button">
-              <i class="fas fa-bell"></i> Activer l’alerte
-            </button>
-            <button id="bfTrainAlertDeactivateBtn" type="button">
-              <i class="fas fa-bell-slash"></i> Désactiver
-            </button>
-          </div>
-        </div>
-
-        <div id="bfTrainAlertStatus" role="status" aria-live="polite"></div>
-
-        <p class="bf-train-alert-live-note">
-          <strong>Temps réel SNCF :</strong> la clé API reste utilisée seulement quand tu appuies sur
-          « Consulter les trains ». Elle n’est jamais interrogée par les alertes en arrière-plan.
-        </p>
-      </section>
+      <!-- Les alertes sont désormais proposées au début de mission et gérées dans l’encart compact. -->
 
       <div class="bf-train-actions">
         <button id="bfTrainBreilRefreshBtn" type="button" class="blue">
@@ -3461,6 +3442,43 @@ button.whatsapp:hover {
   </div>
 </div>
 
+
+<!-- Proposition d’alertes trains au début de la mission -->
+<div id="popupTrainAlerts" class="popup-overlay" role="dialog" aria-modal="true" aria-labelledby="popupTrainAlertsTitle">
+  <div class="popup-box">
+    <h3 id="popupTrainAlertsTitle"><i class="fas fa-bell"></i> Alertes trains</h3>
+    <p id="bfTrainAlertPopupMessage" class="bf-alert-popup-summary"></p>
+
+    <div id="bfTrainAlertPopupStationBlock" class="bf-alert-popup-field">
+      <label for="bfTrainAlertPopupStation">Pour une seule gare :</label>
+      <select id="bfTrainAlertPopupStation">
+        <option value="breil">Breil-sur-Roya</option>
+        <option value="fontan-saorge">Fontan-Saorge</option>
+        <option value="saint-dalmas-de-tende">Saint-Dalmas-de-Tende</option>
+        <option value="la-brigue">La Brigue</option>
+        <option value="tende">Tende</option>
+      </select>
+    </div>
+
+    <div class="bf-alert-popup-field">
+      <label for="bfTrainAlertPopupDelay">Prévenir avant le passage :</label>
+      <select id="bfTrainAlertPopupDelay">
+        <option value="2">2 minutes avant</option>
+        <option value="5" selected>5 minutes avant</option>
+        <option value="10">10 minutes avant</option>
+        <option value="15">15 minutes avant</option>
+      </select>
+    </div>
+
+    <div class="popup-buttons">
+      <button id="bfTrainAlertPopupBreilBtn" type="button" class="popup-btn">Activer pour Breil-sur-Roya</button>
+      <button id="bfTrainAlertPopupAllBtn" type="button" class="popup-btn">Activer pour toutes les gares Breil–Tende</button>
+      <button id="bfTrainAlertPopupSingleBtn" type="button" class="popup-btn">Activer seulement pour la gare choisie</button>
+      <button id="bfTrainAlertPopupSkipBtn" type="button" class="popup-btn cancel">Pas maintenant</button>
+    </div>
+    <p id="bfTrainAlertPopupProgress">Activation en cours…</p>
+  </div>
+</div>
 
 <!-- Confirmation de fin de mission -->
 <div id="popupFinMission" class="popup-overlay" role="dialog" aria-modal="true" aria-labelledby="popupFinMissionTitre">
@@ -8493,29 +8511,45 @@ function bfAutoRetirerAnciennesLignes(lignes) {
   });
 }
 
+function bfPlanifierPropositionAlertesTrain(delai = 120) {
+  window.setTimeout(() => {
+    if (typeof window.bfProposerAlertesTrainMission === "function") {
+      window.bfProposerAlertesTrainMission();
+    }
+  }, delai);
+}
+
 function bfVerifierDemandeDeroulementAutomatique() {
   const site = (document.getElementById("siteSelect")?.value || "").trim();
   const date = (document.getElementById("dateInput")?.value || "").trim();
   const heureDebut = (document.getElementById("heureDebutInput")?.value || "").trim();
   const heureFin = (document.getElementById("heureFinInput")?.value || "").trim();
 
-  // Tende est particulier : aucune proposition automatique.
-  if (site === "DSI Tende") return;
-
-  // On ne propose que pour les sites prévus.
-  if (!BF_DEROULEMENT_AUTO_TRAJETS[site]) return;
-
-  // On attend que la mission verrouillée soit complètement chargée.
   if (!site || !date || !heureDebut || !heureFin) return;
+
+  // DSI Tende n’a pas de déroulement automatique : on propose directement
+  // les alertes pour toutes les gares ou pour une seule gare.
+  if (site === "DSI Tende") {
+    bfPlanifierPropositionAlertesTrain(220);
+    return;
+  }
+
+  // Les alertes ne concernent que Breil et le secteur DSI Tende.
+  if (!BF_DEROULEMENT_AUTO_TRAJETS[site]) return;
 
   const mission = window.BF_MISSION_SESSION || {};
   const identifiantMission = mission.createdAt || mission.updatedAt || "mission";
   const signature = `${identifiantMission}|${site}|${date}|${heureDebut}|${heureFin}`;
 
-  // La question n'est posée qu'une seule fois pour cette mission,
-  // même si Border Force est fermé, rouvert ou rechargé.
-  if (localStorage.getItem(BF_DEROULEMENT_AUTO_PROPOSITION_KEY) === signature) return;
-  if (signature === BF_DEROULEMENT_AUTO_DERNIERE_PROPOSITION) return;
+  // Si la question sur le déroulement a déjà été posée, la proposition
+  // d’alertes conserve sa propre mémoire et peut encore être affichée.
+  if (
+    localStorage.getItem(BF_DEROULEMENT_AUTO_PROPOSITION_KEY) === signature ||
+    signature === BF_DEROULEMENT_AUTO_DERNIERE_PROPOSITION
+  ) {
+    bfPlanifierPropositionAlertesTrain(220);
+    return;
+  }
 
   BF_DEROULEMENT_AUTO_DERNIERE_PROPOSITION = signature;
   localStorage.setItem(BF_DEROULEMENT_AUTO_PROPOSITION_KEY, signature);
@@ -8528,29 +8562,33 @@ function bfVerifierDemandeDeroulementAutomatique() {
     );
 
     if (confirmation) {
-      bfGenererDeroulementAutomatique();
+      await bfGenererDeroulementAutomatique();
     }
+
+    // La proposition d’alertes arrive seulement après la réponse à la fenêtre
+    // de déroulement et, si nécessaire, après la confirmation de génération.
+    bfPlanifierPropositionAlertesTrain(100);
   }, 250);
 }
 
-function bfGenererDeroulementAutomatique() {
+async function bfGenererDeroulementAutomatique() {
   const site = (document.getElementById("siteSelect")?.value || "").trim();
   const heureDebut = (document.getElementById("heureDebutInput")?.value || "").trim();
   const heureFin = (document.getElementById("heureFinInput")?.value || "").trim();
   const zone = document.getElementById("deroulement");
 
   if (!zone) {
-    appAlert("⚠️ Zone Déroulement introuvable.");
+    await appAlert("⚠️ Zone Déroulement introuvable.");
     return;
   }
 
   if (!site || !heureDebut || !heureFin) {
-    appAlert("Merci de renseigner le site, l'heure de début et l'heure de fin de mission.");
+    await appAlert("Merci de renseigner le site, l'heure de début et l'heure de fin de mission.");
     return;
   }
 
   if (site === "DSI Tende") {
-    appAlert("Déroulement automatique non disponible pour DSI Tende. Merci de saisir le déroulement manuellement.");
+    await appAlert("Déroulement automatique non disponible pour DSI Tende. Merci de saisir le déroulement manuellement.");
     return;
   }
 
@@ -8560,24 +8598,21 @@ function bfGenererDeroulementAutomatique() {
   let fin = bfAutoTimeToMinutes(heureFin);
 
   if (debut === null || fin === null) {
-    appAlert("Les heures de début et de fin ne sont pas valides.");
+    await appAlert("Les heures de début et de fin ne sont pas valides.");
     return;
   }
 
-  // Gestion vacation de nuit : exemple 22:00 → 06:00.
   if (fin <= debut) fin += 24 * 60;
 
   const priseCompte = debut - 30;
   const departAusseur = debut;
   const arriveeSite = debut + trajet.aller;
-  // L'heure de fin saisie correspond maintenant à l'arrivée à la caserne Ausseur.
-  // Le retour domiciles respectifs / fin de service est automatiquement placé 30 minutes après.
   const arriveeAusseur = fin;
   const departSite = arriveeAusseur - trajet.retour;
   const finService = fin + 30;
 
   if (departSite < arriveeSite) {
-    appAlert("La durée de mission est trop courte par rapport au temps de trajet prévu pour ce site.");
+    await appAlert("La durée de mission est trop courte par rapport au temps de trajet prévu pour ce site.");
     return;
   }
 
@@ -8603,17 +8638,19 @@ function bfGenererDeroulementAutomatique() {
     zone.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
-  appAlert("Déroulement automatique généré. Tu peux modifier les lignes si besoin.");
+  await appAlert("Déroulement automatique généré. Tu peux modifier les lignes si besoin.");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   ["siteSelect", "heureDebutInput", "heureFinInput"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener("change", bfVerifierDemandeDeroulementAutomatique);
-      el.addEventListener("blur", bfVerifierDemandeDeroulementAutomatique);
+    const field = document.getElementById(id);
+    if (field) {
+      field.addEventListener("change", bfVerifierDemandeDeroulementAutomatique);
+      field.addEventListener("blur", bfVerifierDemandeDeroulementAutomatique);
     }
   });
+  // Sécurité pour une mission déjà chargée et verrouillée avant les événements change/blur.
+  window.setTimeout(bfVerifierDemandeDeroulementAutomatique, 650);
 });
 
 // === TRI AUTO INSTANTANÉ DU DÉROULEMENT (ajouté, ne remplace rien) ===
@@ -11955,10 +11992,11 @@ function cleanMrzText(){
 
 <script>
 /* =========================================================
-   ABONNEMENT AUX ALERTES TRAINS THÉORIQUES
-   - Web Push envoyé par Cloudflare ;
-   - aucune consultation automatique de l'API SNCF ;
-   - l'API SNCF reste appelée uniquement par bfTrainConsulter().
+   ALERTES TRAINS — proposition au début de mission
+   - Breil : Breil-sur-Roya uniquement ;
+   - DSI Tende : les cinq gares par défaut, ou une gare choisie ;
+   - encart compact dans Déroulement ;
+   - arrêt automatique à la fin de mission conservé.
    ========================================================= */
 (function () {
   "use strict";
@@ -11970,130 +12008,29 @@ function cleanMrzText(){
   const BF_TRAIN_ALERT_CLIENT_KEY = "bf_train_alert_client_v1";
   const BF_TRAIN_ALERT_LOCAL_KEY = "bf_train_alert_local_v1";
   const BF_TRAIN_ALERT_PENDING_STOP_KEY = "bf_train_alert_pending_stop_v1";
+  const BF_TRAIN_ALERT_PROPOSAL_KEY = "bf_train_alert_proposal_v2";
 
   const STATIONS = {
-    "breil": {
-      key: "breil",
-      stationId: "stop_area:SNCF:87756833",
-      stationName: "Breil-sur-Roya"
-    },
-    "fontan-saorge": {
-      key: "fontan-saorge",
-      stationId: "stop_area:SNCF:87756858",
-      stationName: "Fontan-Saorge"
-    },
-    "saint-dalmas-de-tende": {
-      key: "saint-dalmas-de-tende",
-      stationId: "stop_area:SNCF:87756866",
-      stationName: "Saint-Dalmas-de-Tende"
-    },
-    "la-brigue": {
-      key: "la-brigue",
-      stationId: "stop_area:SNCF:87756874",
-      stationName: "La Brigue"
-    },
-    "tende": {
-      key: "tende",
-      stationId: "stop_area:SNCF:87756882",
-      stationName: "Tende"
-    }
+    "breil": { key: "breil", stationId: "stop_area:SNCF:87756833", stationName: "Breil-sur-Roya" },
+    "fontan-saorge": { key: "fontan-saorge", stationId: "stop_area:SNCF:87756858", stationName: "Fontan-Saorge" },
+    "saint-dalmas-de-tende": { key: "saint-dalmas-de-tende", stationId: "stop_area:SNCF:87756866", stationName: "Saint-Dalmas-de-Tende" },
+    "la-brigue": { key: "la-brigue", stationId: "stop_area:SNCF:87756874", stationName: "La Brigue" },
+    "tende": { key: "tende", stationId: "stop_area:SNCF:87756882", stationName: "Tende" }
   };
+  const ALL_STATION_KEYS = Object.keys(STATIONS);
 
-  function el(id) {
-    return document.getElementById(id);
-  }
-
-  function clean(value) {
-    return String(value || "").trim();
-  }
-
-  function getClientId() {
-    let value = clean(localStorage.getItem(BF_TRAIN_ALERT_CLIENT_KEY));
-    if (value) return value;
-
-    if (window.crypto?.randomUUID) {
-      value = window.crypto.randomUUID();
-    } else {
-      value = "bf-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
-    }
-    localStorage.setItem(BF_TRAIN_ALERT_CLIENT_KEY, value);
-    return value;
-  }
-
-  function getLocalState() {
-    try {
-      return JSON.parse(localStorage.getItem(BF_TRAIN_ALERT_LOCAL_KEY) || "null");
-    } catch (_) {
-      return null;
-    }
-  }
-
-  function saveLocalState(value) {
-    if (value) {
-      localStorage.setItem(BF_TRAIN_ALERT_LOCAL_KEY, JSON.stringify(value));
-    } else {
-      localStorage.removeItem(BF_TRAIN_ALERT_LOCAL_KEY);
-    }
-  }
-
-  function getPendingStop() {
-    try {
-      return JSON.parse(
-        localStorage.getItem(BF_TRAIN_ALERT_PENDING_STOP_KEY) || "null"
-      );
-    } catch (_) {
-      return null;
-    }
-  }
-
-  function savePendingStop(value) {
-    if (value) {
-      localStorage.setItem(
-        BF_TRAIN_ALERT_PENDING_STOP_KEY,
-        JSON.stringify(value)
-      );
-    } else {
-      localStorage.removeItem(BF_TRAIN_ALERT_PENDING_STOP_KEY);
-    }
-  }
-
-  function setStatus(message, type) {
-    const status = el("bfTrainAlertStatus");
-    if (!status) return;
-    status.textContent = message || "";
-    status.className = message ? (type || "info") : "";
-  }
-
-  function setButtons(active) {
-    const activate = el("bfTrainAlertActivateBtn");
-    const deactivate = el("bfTrainAlertDeactivateBtn");
-    if (activate) activate.style.display = active ? "none" : "inline-flex";
-    if (deactivate) deactivate.style.display = active ? "inline-flex" : "none";
-  }
-
+  function el(id) { return document.getElementById(id); }
+  function clean(value) { return String(value || "").trim(); }
   function normalizeSite(value) {
-    return clean(value)
-      .toLowerCase()
-      .normalize("NFD")
+    return clean(value).toLowerCase().normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "");
   }
-
-  function selectedStation() {
+  function currentSiteKind() {
     const site = normalizeSite(el("siteSelect")?.value);
-
-    if (site.includes("breil")) {
-      return STATIONS.breil;
-    }
-
-    if (site.includes("tende")) {
-      const key = clean(el("bfTrainStationSelect")?.value);
-      if (!key || key === "__all__") return null;
-      return STATIONS[key] || null;
-    }
-
-    return null;
+    if (site.includes("breil")) return "breil";
+    if (site.includes("tende")) return "tende";
+    return "other";
   }
-
   function missionValues() {
     return {
       date: clean(el("dateInput")?.value),
@@ -12101,16 +12038,93 @@ function cleanMrzText(){
       endTime: clean(el("heureFinInput")?.value)
     };
   }
+  function missionSignature() {
+    const mission = missionValues();
+    const session = window.BF_MISSION_SESSION || {};
+    return [
+      session.createdAt || session.updatedAt || "mission",
+      currentSiteKind(), mission.date, mission.startTime, mission.endTime
+    ].join("|");
+  }
+  function getClientId() {
+    let value = clean(localStorage.getItem(BF_TRAIN_ALERT_CLIENT_KEY));
+    if (value) return value;
+    value = window.crypto?.randomUUID
+      ? window.crypto.randomUUID()
+      : "bf-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+    localStorage.setItem(BF_TRAIN_ALERT_CLIENT_KEY, value);
+    return value;
+  }
+  function readJson(key) {
+    try { return JSON.parse(localStorage.getItem(key) || "null"); }
+    catch (_) { return null; }
+  }
+  function writeJson(key, value) {
+    if (value) localStorage.setItem(key, JSON.stringify(value));
+    else localStorage.removeItem(key);
+  }
+  function getLocalState() { return readJson(BF_TRAIN_ALERT_LOCAL_KEY); }
+  function saveLocalState(value) { writeJson(BF_TRAIN_ALERT_LOCAL_KEY, value); renderCompact(); }
+  function getPendingStop() { return readJson(BF_TRAIN_ALERT_PENDING_STOP_KEY); }
+  function savePendingStop(value) { writeJson(BF_TRAIN_ALERT_PENDING_STOP_KEY, value); }
+
+  function stationKeysFromState(state) {
+    if (Array.isArray(state?.stationKeys) && state.stationKeys.length) return state.stationKeys;
+    if (state?.stationKey) return [state.stationKey];
+    if (state?.station?.key) return [state.station.key];
+    return [];
+  }
+  function stationNames(keys) {
+    return keys.map(key => STATIONS[key]?.stationName).filter(Boolean);
+  }
+  function scopeLabel(keys) {
+    if (keys.length === ALL_STATION_KEYS.length) return "Toutes les gares Breil–Tende";
+    return stationNames(keys).join(", ") || "gare non définie";
+  }
+  function isTrainMission() { return currentSiteKind() !== "other"; }
+
+  function setStatus(message, type = "info") {
+    const status = el("bfTrainAlertStatus");
+    if (!status) return;
+    status.textContent = message || "";
+    status.className = message ? type : "";
+  }
+
+  function renderCompact() {
+    const card = el("bfTrainAlertCompactCard");
+    if (!card) return;
+    const relevant = isTrainMission();
+    card.classList.toggle("visible", relevant);
+    if (!relevant) return;
+
+    const state = getLocalState();
+    const title = el("bfTrainAlertCompactTitle");
+    const detail = el("bfTrainAlertCompactDetail");
+    const stop = el("bfTrainAlertDeactivateBtn");
+    const modify = el("bfTrainAlertModifyBtn");
+
+    if (state?.active) {
+      const keys = stationKeysFromState(state);
+      if (title) title.textContent = "Alertes trains actives";
+      if (detail) detail.textContent = `${scopeLabel(keys)} · ${state.alertMinutes || 5} min avant le passage`;
+      if (stop) stop.style.display = "inline-flex";
+      if (modify) modify.innerHTML = '<i class="fas fa-sliders"></i> Modifier';
+    } else {
+      if (title) title.textContent = "Alertes trains non activées";
+      if (detail) detail.textContent = currentSiteKind() === "tende"
+        ? "Activation possible pour les cinq gares ou une seule gare."
+        : "Activation possible pour Breil-sur-Roya.";
+      if (stop) stop.style.display = "none";
+      if (modify) modify.innerHTML = '<i class="fas fa-bell"></i> Activer';
+    }
+  }
 
   function urlBase64ToUint8Array(base64String) {
     const padding = "=".repeat((4 - base64String.length % 4) % 4);
-    const base64 = (base64String + padding)
-      .replace(/-/g, "+")
-      .replace(/_/g, "/");
+    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
     const raw = atob(base64);
     return Uint8Array.from([...raw].map(char => char.charCodeAt(0)));
   }
-
   async function fetchJson(path, options) {
     const response = await fetch(BF_TRAIN_ALERT_WORKER_BASE + path, {
       cache: "no-store",
@@ -12121,118 +12135,61 @@ function cleanMrzText(){
         ...(options?.headers || {})
       }
     });
-
-    const text = await response.text();
-    let data = {};
-    try {
-      data = text ? JSON.parse(text) : {};
-    } catch (_) {
-      data = { erreur: text || "Réponse illisible du Worker." };
-    }
-
-    if (!response.ok) {
-      const error = new Error(data.erreur || `Erreur HTTP ${response.status}`);
-      error.status = response.status;
-      throw error;
-    }
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.erreur || data.error || `Erreur HTTP ${response.status}`);
     return data;
   }
-
-  async function requestWorkerUnsubscribe(clientId, timeoutMs = 4500) {
-    const controller = typeof AbortController !== "undefined"
-      ? new AbortController()
-      : null;
-    const timer = controller
-      ? window.setTimeout(() => controller.abort(), timeoutMs)
-      : null;
-
-    try {
-      return await fetchJson("/alerts/unsubscribe", {
-        method: "POST",
-        body: JSON.stringify({ clientId }),
-        keepalive: true,
-        ...(controller ? { signal: controller.signal } : {})
-      });
-    } finally {
-      if (timer) window.clearTimeout(timer);
-    }
+  async function requestWorkerUnsubscribe(clientId) {
+    if (!clientId) return { ok: true, removed: false };
+    return fetchJson("/alerts/unsubscribe", {
+      method: "POST",
+      body: JSON.stringify({ clientId })
+    });
   }
-
   async function unsubscribeBrowserPush() {
     if (!("serviceWorker" in navigator)) return;
-
-    const registration = await navigator.serviceWorker
-      .getRegistration("./bf-train-alerts/")
-      .catch(() => null);
-    const subscription = await registration?.pushManager
-      ?.getSubscription()
-      .catch(() => null);
-    await subscription?.unsubscribe().catch(() => {});
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const registration of registrations) {
+        const subscription = await registration.pushManager?.getSubscription?.();
+        if (subscription) await subscription.unsubscribe().catch(() => {});
+      }
+    } catch (error) {
+      console.warn("Désabonnement Push local impossible :", error);
+    }
   }
-
-  async function retryPendingStop(options = {}) {
+  async function retryPendingStop({ silent = false } = {}) {
     const pending = getPendingStop();
     if (!pending?.clientId) return true;
-
     try {
       await requestWorkerUnsubscribe(pending.clientId);
-      await unsubscribeBrowserPush();
       savePendingStop(null);
-      saveLocalState(null);
-      setButtons(false);
-      if (!options.silent) {
-        setStatus(
-          "L’arrêt différé des alertes de la mission précédente a bien été confirmé.",
-          "info"
-        );
-      }
+      if (!silent) setStatus("L’arrêt différé des alertes a été confirmé.", "info");
       return true;
     } catch (error) {
-      console.warn("Arrêt différé des alertes trains en attente :", error);
+      if (!silent) setStatus("L’arrêt des alertes sera retenté dès le retour du réseau.", "warning");
       return false;
     }
   }
-
   async function stopAlertsAtMissionEnd() {
     const local = getLocalState();
-    const previousPending = getPendingStop();
-    const clientId = clean(
-      local?.clientId ||
-      previousPending?.clientId ||
-      localStorage.getItem(BF_TRAIN_ALERT_CLIENT_KEY)
-    );
-
-    // On retire immédiatement l'état actif de BorderForce. La demande conservée
-    // permet de terminer l'arrêt côté Worker si la connexion coupe maintenant.
+    const pending = getPendingStop();
+    const clientId = clean(local?.clientId || pending?.clientId || localStorage.getItem(BF_TRAIN_ALERT_CLIENT_KEY));
     saveLocalState(null);
-    setButtons(false);
-
     if (!clientId) {
       savePendingStop(null);
       await unsubscribeBrowserPush();
       return { ok: true, active: false };
     }
-
-    savePendingStop({
-      clientId,
-      requestedAt: new Date().toISOString(),
-      reason: "mission_end"
-    });
-
+    savePendingStop({ clientId, requestedAt: new Date().toISOString(), reason: "mission_end" });
     try {
       await requestWorkerUnsubscribe(clientId);
       savePendingStop(null);
       await unsubscribeBrowserPush();
-      setStatus("Alertes trains arrêtées avec la fin de mission.", "info");
       return { ok: true, active: false };
     } catch (error) {
-      // Le Push local est tout de même désabonné : aucune nouvelle notification
-      // ne doit s'afficher. Le retrait côté Worker sera retenté au prochain réseau.
       await unsubscribeBrowserPush();
-      console.warn(
-        "Fin de mission : arrêt Worker différé faute de réseau :",
-        error
-      );
+      console.warn("Arrêt Worker différé faute de réseau :", error);
       return { ok: false, pending: true, error };
     }
   }
@@ -12241,12 +12198,9 @@ function cleanMrzText(){
     if (!("serviceWorker" in navigator)) {
       throw new Error("Ce navigateur ne prend pas en charge les notifications en arrière-plan.");
     }
-
     const registration = await navigator.serviceWorker.register(
-      "./bf-train-alert-sw.js",
-      { scope: "./bf-train-alerts/" }
+      "./bf-train-alert-sw.js", { scope: "./bf-train-alerts/" }
     );
-
     if (!registration.active) {
       const worker = registration.installing || registration.waiting;
       if (worker) {
@@ -12265,92 +12219,58 @@ function cleanMrzText(){
     }
     return registration;
   }
-
   async function getOrCreateSubscription(registration, publicKey) {
     let subscription = await registration.pushManager.getSubscription();
     if (subscription) return subscription;
-
-    try {
-      return await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey)
-      });
-    } catch (error) {
-      const existing = await registration.pushManager.getSubscription();
-      if (existing) {
-        await existing.unsubscribe().catch(() => {});
-        return registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(publicKey)
-        });
-      }
-      throw error;
-    }
+    return registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(publicKey)
+    });
   }
 
-  function validateActivation() {
-    const station = selectedStation();
+  function validateMissionAndStations(requestedKeys) {
     const mission = missionValues();
-
-    if (!station) {
-      throw new Error(
-        "Choisis une gare précise. La vue « Toutes les gares » ne peut pas être surveillée par une seule alerte."
-      );
-    }
     if (!mission.date || !mission.startTime || !mission.endTime) {
       throw new Error("La date et les horaires de mission doivent être renseignés.");
     }
-
-    return { station, mission };
+    const kind = currentSiteKind();
+    if (kind === "other") throw new Error("Les alertes trains sont disponibles uniquement pour Breil et DSI Tende.");
+    let keys = [...new Set((requestedKeys || []).filter(key => STATIONS[key]))];
+    if (!keys.length) keys = kind === "breil" ? ["breil"] : ALL_STATION_KEYS.slice();
+    if (kind === "breil") keys = ["breil"];
+    return { mission, keys };
   }
 
-  async function activate() {
-    const button = el("bfTrainAlertActivateBtn");
-    if (button?.disabled) return;
-
+  async function activate(options = {}) {
+    const progress = el("bfTrainAlertPopupProgress");
     try {
-      if (!window.isSecureContext) {
-        throw new Error("Les notifications nécessitent une adresse HTTPS.");
-      }
+      if (!window.isSecureContext) throw new Error("Les notifications nécessitent une adresse HTTPS.");
       if (!("Notification" in window) || !("PushManager" in window)) {
         throw new Error("Les notifications Web Push ne sont pas disponibles sur ce navigateur.");
       }
-
       const oldStopCompleted = await retryPendingStop({ silent: true });
-      if (!oldStopCompleted) {
-        throw new Error(
-          "L’arrêt de la mission précédente n’a pas encore pu être confirmé. Vérifie la connexion Internet puis réessaie."
-        );
-      }
+      if (!oldStopCompleted) throw new Error("L’arrêt de la mission précédente n’a pas encore pu être confirmé.");
 
-      const { station, mission } = validateActivation();
-      const delayMinutes = Number.parseInt(el("bfTrainAlertDelay")?.value || "5", 10);
-
-      button.disabled = true;
-      setStatus("Autorisation des notifications…", "info");
+      const { mission, keys } = validateMissionAndStations(options.stationKeys);
+      const delayMinutes = Number.parseInt(options.delayMinutes || "5", 10);
+      if (progress) { progress.style.display = "block"; progress.textContent = "Autorisation des notifications…"; }
+      setStatus("Activation des alertes…", "info");
 
       let permission = Notification.permission;
-      if (permission === "default") {
-        permission = await Notification.requestPermission();
-      }
-      if (permission !== "granted") {
-        throw new Error("L’autorisation de notification n’a pas été accordée.");
-      }
+      if (permission === "default") permission = await Notification.requestPermission();
+      if (permission !== "granted") throw new Error("L’autorisation de notification n’a pas été accordée.");
 
       const publicKeyData = await fetchJson("/alerts/public-key");
-      if (!publicKeyData.publicKey) {
-        throw new Error("La clé publique Web Push n’est pas configurée dans Cloudflare.");
-      }
-
+      if (!publicKeyData.publicKey) throw new Error("La clé publique Web Push n’est pas configurée dans Cloudflare.");
       const registration = await getRegistration();
       const subscription = await getOrCreateSubscription(registration, publicKeyData.publicKey);
+      if (progress) progress.textContent = "Programmation des alertes dans Cloudflare…";
 
-      setStatus("Enregistrement de la mission auprès de Cloudflare…", "info");
-
+      const stations = keys.map(key => STATIONS[key]);
       const payload = {
         clientId: getClientId(),
         subscription: subscription.toJSON(),
-        station,
+        stations,
         missionDate: mission.date,
         startTime: mission.startTime,
         endTime: mission.endTime,
@@ -12358,147 +12278,177 @@ function cleanMrzText(){
         timezone: "Europe/Paris",
         pageUrl: location.href.split("#")[0]
       };
-
       const result = await fetchJson("/alerts/subscribe", {
-        method: "POST",
-        body: JSON.stringify(payload)
+        method: "POST", body: JSON.stringify(payload)
       });
 
-      const localState = {
+      saveLocalState({
         active: true,
         clientId: payload.clientId,
-        station,
+        stationKeys: keys,
+        stationNames: stationNames(keys),
         missionDate: mission.date,
         startTime: mission.startTime,
         endTime: mission.endTime,
+        siteKind: currentSiteKind(),
         alertMinutes: delayMinutes,
         activatedAt: new Date().toISOString()
-      };
-      saveLocalState(localState);
-      setButtons(true);
-
-      const feedText = result.scheduleReady
-        ? ""
-        : " Les horaires GTFS ne sont pas encore chargés : lance d’abord l’actualisation initiale du Worker.";
-      setStatus(
-        `Alerte activée pour ${station.stationName}, ${delayMinutes} minute${delayMinutes > 1 ? "s" : ""} avant chaque train théorique pendant la mission.${feedText}`,
-        result.scheduleReady ? "success" : "warning"
-      );
+      });
+      closeProposal();
+      const scheduleText = result.scheduleReady ? "" : " Le planning GTFS du Worker doit encore être actualisé.";
+      setStatus(`Alertes actives : ${scopeLabel(keys)}, ${delayMinutes} min avant les trains.${scheduleText}`,
+        result.scheduleReady ? "success" : "warning");
+      return true;
     } catch (error) {
-      console.error("Activation alerte train :", error);
-      setButtons(false);
-      setStatus(error?.message || "Impossible d’activer l’alerte train.", "error");
-    } finally {
-      if (button) button.disabled = false;
+      console.error("Activation alertes trains :", error);
+      setStatus(error?.message || "Impossible d’activer les alertes trains.", "error");
+      if (progress) { progress.style.display = "block"; progress.textContent = error?.message || "Activation impossible."; }
+      return false;
     }
   }
 
   async function deactivate() {
     const button = el("bfTrainAlertDeactivateBtn");
-    if (button?.disabled) return;
-
     try {
-      button.disabled = true;
-      setStatus("Désactivation de l’alerte…", "info");
-
+      if (button) button.disabled = true;
+      setStatus("Arrêt des alertes…", "info");
       const clientId = getClientId();
       await requestWorkerUnsubscribe(clientId);
       await unsubscribeBrowserPush();
-
       savePendingStop(null);
       saveLocalState(null);
-      setButtons(false);
-      setStatus("Alerte train désactivée pour ce téléphone.", "info");
+      setStatus("Alertes trains arrêtées pour ce téléphone.", "info");
     } catch (error) {
-      console.error("Désactivation alerte train :", error);
-      setStatus(error?.message || "Impossible de désactiver l’alerte.", "error");
+      setStatus(error?.message || "Impossible d’arrêter les alertes.", "error");
     } finally {
       if (button) button.disabled = false;
     }
   }
 
-  async function restoreStatus() {
-    const local = getLocalState();
-    if (!local?.active) {
-      setButtons(false);
-      return;
+  function closeProposal() {
+    const popup = el("popupTrainAlerts");
+    if (popup) popup.style.display = "none";
+    const progress = el("bfTrainAlertPopupProgress");
+    if (progress) { progress.style.display = "none"; progress.textContent = "Activation en cours…"; }
+  }
+
+  function showProposal({ force = false } = {}) {
+    if (!isTrainMission()) return false;
+    const mission = missionValues();
+    if (!mission.date || !mission.startTime || !mission.endTime) return false;
+
+    const state = getLocalState();
+    const sameActiveMission = state?.active &&
+      state.missionDate === mission.date &&
+      state.startTime === mission.startTime &&
+      state.endTime === mission.endTime &&
+      state.siteKind === currentSiteKind();
+    if (sameActiveMission && !force) return false;
+
+    const signature = missionSignature();
+    if (!force && localStorage.getItem(BF_TRAIN_ALERT_PROPOSAL_KEY) === signature) return false;
+    if (!force) localStorage.setItem(BF_TRAIN_ALERT_PROPOSAL_KEY, signature);
+
+    const kind = currentSiteKind();
+    const popup = el("popupTrainAlerts");
+    if (!popup) return false;
+    const message = el("bfTrainAlertPopupMessage");
+    const breilButton = el("bfTrainAlertPopupBreilBtn");
+    const allButton = el("bfTrainAlertPopupAllBtn");
+    const singleButton = el("bfTrainAlertPopupSingleBtn");
+    const stationBlock = el("bfTrainAlertPopupStationBlock");
+    const stationSelect = el("bfTrainAlertPopupStation");
+    const delaySelect = el("bfTrainAlertPopupDelay");
+
+    const previousKeys = stationKeysFromState(state);
+    if (delaySelect) delaySelect.value = String(state?.alertMinutes || 5);
+    if (stationSelect) {
+      const selectedControl = clean(el("bfTrainStationSelect")?.value);
+      stationSelect.value = previousKeys.length === 1 ? previousKeys[0]
+        : STATIONS[selectedControl] ? selectedControl : "tende";
     }
 
-    setButtons(true);
-    setStatus("Vérification de l’alerte active…", "info");
+    if (kind === "breil") {
+      if (message) message.textContent = "Souhaites-tu recevoir une notification avant le passage des trains à Breil-sur-Roya pendant cette mission ?";
+      if (breilButton) breilButton.style.display = "inline-flex";
+      if (allButton) allButton.style.display = "none";
+      if (singleButton) singleButton.style.display = "none";
+      if (stationBlock) stationBlock.style.display = "none";
+    } else {
+      if (message) message.textContent = "Pour DSI Tende, tu peux surveiller toutes les gares Breil–Tende avec un seul abonnement, même si tu changes de gare pendant la mission.";
+      if (breilButton) breilButton.style.display = "none";
+      if (allButton) allButton.style.display = "inline-flex";
+      if (singleButton) singleButton.style.display = "inline-flex";
+      if (stationBlock) stationBlock.style.display = "block";
+    }
+    popup.style.display = "flex";
+    return true;
+  }
 
+  async function restoreStatus() {
+    renderCompact();
+    const local = getLocalState();
+    if (!local?.active) return;
+    setStatus("Vérification de l’abonnement actif…", "info");
     try {
-      const data = await fetchJson(
-        "/alerts/status?clientId=" + encodeURIComponent(getClientId())
-      );
-
+      const data = await fetchJson("/alerts/status?clientId=" + encodeURIComponent(getClientId()));
       if (!data.active) {
         saveLocalState(null);
-        setButtons(false);
         setStatus("Aucune alerte active pour ce téléphone.", "info");
         return;
       }
-
+      const keys = Array.isArray(data.alert?.stationKeys) && data.alert.stationKeys.length
+        ? data.alert.stationKeys : stationKeysFromState(local);
       saveLocalState({
         ...local,
         ...data.alert,
+        stationKeys: keys,
+        stationNames: data.alert?.stationNames || stationNames(keys),
         active: true
       });
-
       const minutes = data.alert?.alertMinutes || local.alertMinutes || 5;
-      const stationName = data.alert?.stationName || local.station?.stationName || "la gare sélectionnée";
-      const schedule = data.scheduleReady
-        ? ""
-        : " Les horaires GTFS ne sont pas encore disponibles dans le Worker.";
-      setStatus(
-        `Alerte active pour ${stationName}, ${minutes} minute${minutes > 1 ? "s" : ""} avant les trains théoriques.${schedule}`,
-        data.scheduleReady ? "success" : "warning"
-      );
-    } catch (error) {
-      setStatus(
-        "L’alerte était activée, mais le Worker Cloudflare ne répond pas actuellement. Elle sera revérifiée à la prochaine ouverture.",
-        "warning"
-      );
+      setStatus(`Alertes actives : ${scopeLabel(keys)}, ${minutes} min avant les trains.`,
+        data.scheduleReady ? "success" : "warning");
+    } catch (_) {
+      setStatus("Le Worker ne répond pas actuellement ; l’abonnement sera revérifié plus tard.", "warning");
     }
   }
 
   function missionChanged() {
+    renderCompact();
     const local = getLocalState();
     if (!local?.active) return;
-
     const mission = missionValues();
-    const station = selectedStation();
-    const same =
-      mission.date === local.missionDate &&
+    const same = mission.date === local.missionDate &&
       mission.startTime === local.startTime &&
       mission.endTime === local.endTime &&
-      station?.key === local.station?.key;
-
-    if (!same) {
-      setStatus(
-        "La gare ou les horaires de mission ont changé. Désactive puis réactive l’alerte pour enregistrer la nouvelle mission.",
-        "warning"
-      );
-    }
+      currentSiteKind() === local.siteKind;
+    if (!same) setStatus("La mission ou ses horaires ont changé. Appuie sur Modifier pour actualiser les alertes.", "warning");
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    el("bfTrainAlertActivateBtn")?.addEventListener("click", activate);
+    el("bfTrainAlertModifyBtn")?.addEventListener("click", () => showProposal({ force: true }));
     el("bfTrainAlertDeactivateBtn")?.addEventListener("click", deactivate);
+    el("bfTrainAlertPopupSkipBtn")?.addEventListener("click", closeProposal);
+    el("bfTrainAlertPopupBreilBtn")?.addEventListener("click", () => activate({
+      stationKeys: ["breil"], delayMinutes: el("bfTrainAlertPopupDelay")?.value
+    }));
+    el("bfTrainAlertPopupAllBtn")?.addEventListener("click", () => activate({
+      stationKeys: ALL_STATION_KEYS, delayMinutes: el("bfTrainAlertPopupDelay")?.value
+    }));
+    el("bfTrainAlertPopupSingleBtn")?.addEventListener("click", () => activate({
+      stationKeys: [clean(el("bfTrainAlertPopupStation")?.value)],
+      delayMinutes: el("bfTrainAlertPopupDelay")?.value
+    }));
 
-    ["siteSelect", "dateInput", "heureDebutInput", "heureFinInput", "bfTrainStationSelect"]
-      .forEach(id => {
-        const field = el(id);
-        field?.addEventListener("change", missionChanged);
-      });
+    ["siteSelect", "dateInput", "heureDebutInput", "heureFinInput"]
+      .forEach(id => el(id)?.addEventListener("change", missionChanged));
 
     retryPendingStop({ silent: true }).finally(restoreStatus);
   });
+  window.addEventListener("online", () => retryPendingStop({ silent: true }));
 
-  window.addEventListener("online", () => {
-    retryPendingStop({ silent: true });
-  });
-
+  window.bfProposerAlertesTrainMission = (options) => showProposal(options || {});
   window.bfActiverAlerteTrainTheorique = activate;
   window.bfDesactiverAlerteTrainTheorique = deactivate;
   window.bfArreterAlertesTrainFinMission = stopAlertsAtMissionEnd;
