@@ -10493,8 +10493,8 @@ function cleanMrzText(){
     if (!bfTrainEstTempsReel(event)) {
       return {
         state: "unavailable",
-        shortLabel: "aucun retard signalé",
-        title: `${type} : aucun retard signalé`,
+        shortLabel: "temps réel non communiqué",
+        title: `${type} : temps réel non communiqué`,
         detail: `Horaire prévu ${baseTime || actualTime}`
       };
     }
@@ -10636,9 +10636,15 @@ function cleanMrzText(){
   function bfTrainCardHtml(train, near) {
     const selected = bfTrainState.selection?.trainKey === train.key;
     const title = bfTrainDescription(train);
-    const route = train.origin && train.destination
-      ? `${train.origin} → ${train.destination}`
-      : (train.routeName || train.destination || train.origin || "Trajet non communiqué");
+    
+const routeBrute = train.origin && train.destination
+  ? `${train.origin} → ${train.destination}`
+  : (train.routeName || train.destination || train.origin || "");
+
+const route = /^P\d+$/i.test(routeBrute.trim())
+  ? ""
+  : routeBrute;
+
     const distance = bfTrainEcartAvecControle(train);
     const distanceLabel = distance !== null ? `Écart avec l'heure saisie : ${distance} min` : "";
     const referenceEvent = train.arrival || train.departure;
@@ -10646,7 +10652,7 @@ function cleanMrzText(){
       ? "Trenitalia · horaire théorique"
       : bfTrainEstTempsReel(referenceEvent)
         ? "SNCF · temps réel"
-        : "SNCF · horaire en ligne, aucun retard signalé";
+        : "SNCF · horaire en ligne, sans actualisation temps réel";
     const jourLabel = referenceEvent?.jourLabel ? ` · ${referenceEvent.jourLabel}` : "";
     const circulationLabel = train.circulationLabel ? ` · ${train.circulationLabel}` : "";
     const metaLabel = [distanceLabel, `${sourceLabel}${jourLabel}${circulationLabel}`]
@@ -10674,7 +10680,7 @@ function cleanMrzText(){
       <div class="bf-train-card${near ? " near" : ""}${selected ? " selected" : ""}">
         ${stationBadge}
         <div class="bf-train-title">${bfTrainEchapperHtml(title)}</div>
-        <div class="bf-train-route">${bfTrainEchapperHtml(route)}</div>
+        ${route ? `<div class="bf-train-route">${bfTrainEchapperHtml(route)}</div>` : ""}
         <div class="bf-train-meta">${bfTrainEchapperHtml(metaLabel || "Sélectionne l'arrivée ou le départ correspondant au contrôle.")}</div>
         <div class="bf-train-live-statuses">${liveStatuses}</div>
         <div class="bf-train-event-buttons">${buttons.join("")}</div>
