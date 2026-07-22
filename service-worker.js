@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bf-suite-v53-alertes-bleues';
+const CACHE_NAME = 'bf-suite-v54-alertes-bleues';
 const URLS_TO_CACHE = [
   './',
   './index.html',
