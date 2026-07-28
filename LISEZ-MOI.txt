@@ -1,8 +1,0 @@
-Suite BorderForce — sécurité d'envoi du compte rendu
-
-À remplacer sur GitHub :
-- borderforce/index.html
-- service-worker.js
-
-Fonctions ajoutées : statut non envoyé / envoyé / modifié, confirmation après copie ou retour de WhatsApp, avertissement avant fin de mission.
-La vérification d'envoi reste une confirmation manuelle : une page web ne peut pas connaître la réception réelle dans WhatsApp.
