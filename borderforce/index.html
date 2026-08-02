@@ -12083,7 +12083,8 @@ const route = /^P\d+$/i.test(routeBrute.trim())
   const BF_BUS_MARGIN_MINUTES = 20;
 
   const BF_BUS_SITE_LABELS = {
-    "breil": "Breil-sur-Roya",
+    "breil-gare": "Breil Gare SNCF",
+    "breil": "Breil-sur-Roya — tous les arrêts",
     "fontan-saorge": "Fontan / Saorge",
     "saint-dalmas": "Saint-Dalmas-de-Tende",
     "la-brigue": "La Brigue",
@@ -12142,7 +12143,12 @@ const route = /^P\d+$/i.test(routeBrute.trim())
   }
 
   function bfBusSiteSelectionne() {
-    if (bfBusMissionSiteKey() === "breil") return "breil";
+    // Mission « Breil-sur-Roya » : uniquement les arrivées et départs
+    // de l'arrêt Breil Gare SNCF.
+    if (bfBusMissionSiteKey() === "breil") return "breil-gare";
+
+    // Mission « DSI Tende » : le choix « Breil-sur-Roya » conserve
+    // tous les arrêts de Breil situés sur les lignes 19, 23 et 25.
     if (!bfBusEstDsiTende()) return "";
     return bfBusEl("bfBusSiteSelect")?.value || "";
   }
@@ -12159,7 +12165,7 @@ const route = /^P\d+$/i.test(routeBrute.trim())
     if (!panelTitle) return;
 
     if (bfBusMissionSiteKey() === "breil") {
-      panelTitle.innerHTML = '<i class="fas fa-bus"></i> Bus Zest à Breil-sur-Roya';
+      panelTitle.innerHTML = '<i class="fas fa-bus"></i> Bus Zest — Breil Gare SNCF';
     } else if (bfBusEstDsiTende() && selectedSite) {
       panelTitle.innerHTML = `<i class="fas fa-bus"></i> Bus Zest — ${bfBusEchapperHtml(BF_BUS_SITE_LABELS[selectedSite] || selectedSite)}`;
     } else {
