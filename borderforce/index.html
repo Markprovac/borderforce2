@@ -12836,9 +12836,19 @@ const route = /^P\d+$/i.test(routeBrute.trim())
       const nbCtrl = bfBusEl("nb_controles")?.value;
       const nbDesc = bfBusEl("nb_descendus")?.value;
 
+      // Dans le déroulement, on garde uniquement l'information utile :
+      // ligne, arrêt de départ et destination. Le temps réel et le retard
+      // restent visibles dans la consultation des bus, mais ne sont pas
+      // recopiés dans le compte rendu.
+      const departBus = selection.stopName || BF_BUS_SITE_LABELS[bfBusSiteSelectionne()] || "";
+      const destinationBus = selection.direction || "";
+      const trajetBus = departBus && destinationBus
+        ? `${departBus} → ${destinationBus}`
+        : (departBus || destinationBus);
       const descriptionBus = [
-        selection.description,
-        selection.theoretical ? "" : selection.sourceNote
+        "Bus Zest",
+        selection.line ? `ligne ${selection.line}` : "",
+        trajetBus
       ].filter(Boolean).join(" — ");
 
       const corps =
