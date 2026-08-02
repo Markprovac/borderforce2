@@ -12356,6 +12356,48 @@ const route = /^P\d+$/i.test(routeBrute.trim())
     return raw || "Destination non communiquée";
   }
 
+  /*
+   * Le GTFS Zest renvoie parfois comme direction le terminus où se trouve
+   * précisément le contrôle, par exemple :
+   *   arrêt = « Breil Gare SNCF »
+   *   direction = « Breil Gare »
+   * Il s'agit alors d'une arrivée au terminus, pas d'un trajet
+   * « Breil Gare SNCF → Breil Gare ».
+   */
+  function bfBusMemeLieu(a, b) {
+    const lieuA = bfBusNormaliserTexte(a);
+    const lieuB = bfBusNormaliserTexte(b);
+
+    if (!lieuA || !lieuB) return false;
+    if (lieuA === lieuB) return true;
+
+    // Accepte les variantes du même arrêt : « Breil Gare » /
+    // « Breil Gare SNCF », « Tende » / « Tende Gare », etc.
+    return (
+      (lieuA.length >= 5 && lieuB.includes(lieuA)) ||
+      (lieuB.length >= 5 && lieuA.includes(lieuB))
+    );
+  }
+
+  function bfBusTrajetDeroulement(selection) {
+    const arret = String(
+      selection?.stopName ||
+      BF_BUS_SITE_LABELS[bfBusSiteSelectionne()] ||
+      ""
+    ).trim();
+
+    const destination = String(selection?.direction || "").trim();
+
+    if (arret && destination && bfBusMemeLieu(arret, destination)) {
+      return `arrivée à ${arret}`;
+    }
+
+    if (arret && destination) return `${arret} → ${destination}`;
+    if (destination) return `direction ${destination}`;
+    if (arret) return `passage à ${arret}`;
+    return "";
+  }
+
   function bfBusSourceLisible(event) {
     if (event?.source === "temps_reel_modifie") return "Temps réel actualisé";
     if (event?.source === "temps_reel") return "Temps réel";
@@ -12837,14 +12879,12 @@ const route = /^P\d+$/i.test(routeBrute.trim())
       const nbDesc = bfBusEl("nb_descendus")?.value;
 
       // Dans le déroulement, on garde uniquement l'information utile :
-      // ligne, arrêt de départ et destination. Le temps réel et le retard
-      // restent visibles dans la consultation des bus, mais ne sont pas
-      // recopiés dans le compte rendu.
-      const departBus = selection.stopName || BF_BUS_SITE_LABELS[bfBusSiteSelectionne()] || "";
-      const destinationBus = selection.direction || "";
-      const trajetBus = departBus && destinationBus
-        ? `${departBus} → ${destinationBus}`
-        : (departBus || destinationBus);
+      // ligne et trajet. Lorsque la direction correspond à l'arrêt contrôlé,
+      // il s'agit d'une arrivée au terminus : on écrit « arrivée à ... »
+      // au lieu de fabriquer un faux trajet entre deux noms du même arrêt.
+      // Le temps réel et le retard restent visibles dans la consultation
+      // des bus, mais ne sont pas recopiés dans le compte rendu.
+      const trajetBus = bfBusTrajetDeroulement(selection);
       const descriptionBus = [
         "Bus Zest",
         selection.line ? `ligne ${selection.line}` : "",
@@ -12871,8 +12911,8 @@ const route = /^P\d+$/i.test(routeBrute.trim())
 
       const prefixeUnique =
         typeof window.triJoin === "function"
-          ? window.triJoin([heure, selection.description])
-          : [heure, selection.description].filter(Boolean).join(" — ");
+          ? window.triJoin([heure, descriptionBus])
+          : [heure, descriptionBus].filter(Boolean).join(" — ");
 
       const resultatAjout =
         typeof window.bfAjouterOuMettreAJourPassage === "function"
