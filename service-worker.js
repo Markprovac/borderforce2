@@ -1,10 +1,20 @@
-const CACHE_NAME = 'bf-suite-v61-alertes-bleues';
+const CACHE_NAME = 'bf-suite-v61-sncf-hors-ligne';
 const URLS_TO_CACHE = [
   './',
   './index.html',
   './borderforce/index.html',
   './compteur/index.html',
-  './manifest.json'
+  './manifest.json',
+  './trains-sncf-roya.js',
+  './trains-trenitalia-roya.js',
+  './borderforce/trains-sncf-roya.js',
+  './borderforce/trains-trenitalia-roya.js',
+  './html/index.html',
+  './html/trains-sncf-roya.js',
+  './html/trains-trenitalia-roya.js',
+  './borderforce/html/index.html',
+  './borderforce/html/trains-sncf-roya.js',
+  './borderforce/html/trains-trenitalia-roya.js'
 ];
 
 self.addEventListener('install', event => {
