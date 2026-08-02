@@ -12371,11 +12371,23 @@ const route = /^P\d+$/i.test(routeBrute.trim())
     if (!lieuA || !lieuB) return false;
     if (lieuA === lieuB) return true;
 
-    // Accepte les variantes du même arrêt : « Breil Gare » /
-    // « Breil Gare SNCF », « Tende » / « Tende Gare », etc.
-    return (
-      (lieuA.length >= 5 && lieuB.includes(lieuA)) ||
-      (lieuB.length >= 5 && lieuA.includes(lieuB))
+    /*
+     * Ne jamais déduire que deux lieux sont identiques parce que l'un de
+     * leurs noms est contenu dans l'autre. Exemple à proscrire :
+     * « St Dalmas de Tende » = « Tende ».
+     *
+     * Seules les variantes explicitement connues du même arrêt sont
+     * rapprochées ici.
+     */
+    const equivalences = [
+      new Set([
+        "breil gare",
+        "breil gare sncf"
+      ])
+    ];
+
+    return equivalences.some(groupe =>
+      groupe.has(lieuA) && groupe.has(lieuB)
     );
   }
 
