@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bf-suite-v61-sncf-hors-ligne';
+const CACHE_NAME = 'bf-suite-v62-sncf-hors-ligne';
 const URLS_TO_CACHE = [
   './',
   './index.html',
