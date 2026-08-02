@@ -12083,6 +12083,7 @@ const route = /^P\d+$/i.test(routeBrute.trim())
   const BF_BUS_MARGIN_MINUTES = 20;
 
   const BF_BUS_SITE_LABELS = {
+    "breil-gare": "Breil Gare SNCF",
     "breil": "Breil-sur-Roya",
     "fontan-saorge": "Fontan / Saorge",
     "saint-dalmas": "Saint-Dalmas-de-Tende",
@@ -12142,7 +12143,12 @@ const route = /^P\d+$/i.test(routeBrute.trim())
   }
 
   function bfBusSiteSelectionne() {
-    if (bfBusMissionSiteKey() === "breil") return "breil";
+    // Mission Breil-sur-Roya : uniquement les arrivées et départs
+    // à l'arrêt Breil Gare SNCF.
+    if (bfBusMissionSiteKey() === "breil") return "breil-gare";
+
+    // Mission DSI Tende : le secteur choisi reste inchangé.
+    // DSI Tende + Breil continue donc d'utiliser "breil".
     if (!bfBusEstDsiTende()) return "";
     return bfBusEl("bfBusSiteSelect")?.value || "";
   }
