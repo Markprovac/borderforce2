@@ -1,6 +1,6 @@
 {
-  "name": "Suite BorderForce",
-  "short_name": "BorderForce",
+  "name": "Suite BorderForce TEST",
+  "short_name": "BF TEST",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
