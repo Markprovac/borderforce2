@@ -319,6 +319,94 @@
       'Date d\'émission', 'Délivré par', 'Date de péremption'
     ];
 
+    // Libellés visuels courants des pièces d'identité utilisant l'alphabet latin.
+    // Ce moteur ne remplace pas la MRZ : il sert uniquement quand les données
+    // sont imprimées sur le document sans zone lisible par machine exploitable.
+    const VISUAL_FIELD_LABELS = {
+      lastName: [
+        'NOM DE FAMILLE', 'NOM DE NAISSANCE', 'NOM D USAGE', 'NOM',
+        'SURNAME', 'FAMILY NAME', 'LAST NAME', 'BIRTH NAME',
+        'APELLIDOS', 'APELLIDO', 'COGNOME', 'FAMILIENNAME', 'NACHNAME',
+        'APELIDOS', 'APELIDO', 'ACHTERNAAM', 'NAZWISKO', 'NUME',
+        'PREZIME', 'SOYADI', 'MBIEMRI'
+      ],
+      firstName: [
+        'PRENOM S', 'PRENOMS', 'PRENOM', 'GIVEN NAME S', 'GIVEN NAMES',
+        'GIVEN NAME', 'FIRST NAMES', 'FIRST NAME', 'FORENAMES', 'FORENAME',
+        'NOMBRES', 'NOMBRE', 'NOMES', 'NOME', 'VORNAMEN', 'VORNAME',
+        'VOORNAMEN', 'VOORNAAM', 'IMIONA', 'IMIE', 'PRENUME', 'IME',
+        'ADI', 'EMRI'
+      ],
+      birthDate: [
+        'DATE DE NAISSANCE', 'NE E LE', 'NEE LE', 'NE LE', 'DATE OF BIRTH', 'BIRTH DATE',
+        'FECHA DE NACIMIENTO', 'FECHA NACIMIENTO', 'DATA DI NASCITA',
+        'GEBURTSDATUM', 'DATA DE NASCIMENTO', 'GEBOORTEDATUM',
+        'DATA URODZENIA', 'DATA NASTERII', 'DATUM RODENJA', 'DOGUM TARIHI',
+        'DATELINDJA'
+      ],
+      placeOfBirth: [
+        'LIEU DE NAISSANCE', 'PLACE OF BIRTH', 'BIRTHPLACE',
+        'LUGAR DE NACIMIENTO', 'LUOGO DI NASCITA', 'GEBURTSORT',
+        'LOCAL DE NASCIMENTO', 'GEBOORTEPLAATS', 'MIEJSCE URODZENIA',
+        'LOCUL NASTERII', 'MJESTO RODENJA', 'MESTO RODENJA', 'DOGUM YERI',
+        'VENDLINDJA'
+      ],
+      sex: [
+        'SEXE', 'SEX', 'GENDER', 'SEXO', 'SESSO', 'GESCHLECHT', 'GESLACHT',
+        'PLEC', 'SPOL', 'CINSIYETI', 'GJINIA'
+      ],
+      nationality: [
+        'NATIONALITE', 'NATIONALITY', 'NACIONALIDAD', 'CITTADINANZA',
+        'STAATSANGEHORIGKEIT', 'NACIONALIDADE', 'NATIONALITEIT',
+        'OBYWATELSTWO', 'CETATENIE', 'DRZAVLJANSTVO', 'UYRUGU', 'SHTETESIA'
+      ],
+      documentNumber: [
+        'NUMERO DU DOCUMENT', 'N DU DOCUMENT', 'NUMERO DE DOCUMENT',
+        'DOCUMENT NUMBER', 'DOCUMENT NO', 'DOC NUMBER', 'DOC NO',
+        'PASSPORT NUMBER', 'PASSPORT NO', 'PASSEPORT N', 'PASSEPORT NO',
+        'IDENTITY NUMBER', 'IDENTITY CARD NO', 'ID NUMBER', 'ID NO',
+        'CARD NUMBER', 'CARD NO', 'NUMERO DE LA CARTE',
+        'NUMERO DE DOCUMENTO', 'NUMERO DOCUMENTO', 'DOCUMENTO NUMERO',
+        'DOKUMENTNUMMER', 'AUSWEISNUMMER', 'AUSWEIS NR',
+        'NR DOCUMENT', 'DOCUMENTNUMMER', 'NUMER DOKUMENTU', 'BROJ DOKUMENTA',
+        'SERI NO', 'NR PERSONAL'
+      ],
+      issueDate: [
+        'DATE DE DELIVRANCE', 'DATE D EMISSION', 'DATE OF ISSUE', 'ISSUE DATE',
+        'ISSUED ON', 'FECHA DE EXPEDICION', 'FECHA DE EMISION',
+        'DATA DI RILASCIO', 'AUSSTELLUNGSDATUM', 'DATA DE EMISSAO',
+        'DATUM VAN AFGIFTE', 'DATA WYDANIA', 'DATA ELIBERARII',
+        'DATUM IZDAVANJA', 'VERILIS TARIHI'
+      ],
+      expirationDate: [
+        'DATE DE PEREMPTION', 'DATE D EXPIRATION', 'DATE OF EXPIRY',
+        'EXPIRY DATE', 'EXPIRATION DATE', 'VALID UNTIL', 'VALID THRU',
+        'FECHA DE CADUCIDAD', 'FECHA DE VENCIMIENTO', 'DATA DI SCADENZA',
+        'GULTIG BIS', 'ABLAUFDATUM', 'VALIDADE', 'GELDIG TOT',
+        'TERMIN WAZNOSCI', 'VALABIL PANA LA', 'VRIJEDI DO',
+        'SON GECERLILIK'
+      ],
+      issuedBy: [
+        'DELIVRE PAR', 'AUTORITE', 'ISSUED BY', 'ISSUING AUTHORITY', 'AUTHORITY',
+        'AUTORIDAD', 'EXPEDIDO POR', 'AUTORITA', 'RILASCIATO DA', 'BEHORDE',
+        'AUSGESTELLT VON', 'EMITIDO POR', 'AFGEGEVEN DOOR',
+        'ORGAN WYDAJACY', 'ELIBERAT DE', 'IZDAO', 'VEREN MAKAM'
+      ]
+    };
+
+    const VISUAL_FIELD_TO_OUTPUT = {
+      documentNumber: 'N° de titre',
+      lastName: 'Nom',
+      firstName: 'Prénom',
+      birthDate: 'Date de naissance',
+      placeOfBirth: 'Lieu de naissance',
+      sex: 'Sexe',
+      nationality: 'Nationalité',
+      issueDate: 'Date d\'émission',
+      issuedBy: 'Délivré par',
+      expirationDate: 'Date de péremption'
+    };
+
     // =====================================================================
     // FORMATAGE STRICT ET CORRECTIONS CHIRURGICALES
     // =====================================================================
@@ -439,6 +527,439 @@
       if (upperText.includes('SEJOUR') || upperText.includes('RESIDENT')) return ALLOWED_DOC_TYPES.TITRE_SEJOUR;
 
       return null;
+    }
+
+    function normalizeVisualText(value) {
+      return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toUpperCase()
+        .replace(/[^A-Z0-9]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function visualTokens(value) {
+      const source = String(value || '');
+      const tokens = [];
+      const regex = /[\p{L}\p{N}]+/gu;
+      let match;
+      while ((match = regex.exec(source)) !== null) {
+        const normalized = normalizeVisualText(match[0]);
+        if (normalized) {
+          tokens.push({
+            raw: match[0],
+            normalized,
+            start: match.index,
+            end: match.index + match[0].length
+          });
+        }
+      }
+      return tokens;
+    }
+
+    function findVisualLabelMatch(value, requestedField = null, anywhere = false) {
+      const tokens = visualTokens(value);
+      if (!tokens.length) return null;
+      let best = null;
+
+      for (const [field, aliases] of Object.entries(VISUAL_FIELD_LABELS)) {
+        if (requestedField && field !== requestedField) continue;
+        for (const alias of aliases) {
+          const aliasTokens = normalizeVisualText(alias).split(' ').filter(Boolean);
+          if (!aliasTokens.length || aliasTokens.length > tokens.length) continue;
+          const maxStart = anywhere ? tokens.length - aliasTokens.length : Math.min(2, tokens.length - aliasTokens.length);
+          for (let start = 0; start <= maxStart; start++) {
+            let matches = true;
+            for (let offset = 0; offset < aliasTokens.length; offset++) {
+              if (tokens[start + offset]?.normalized !== aliasTokens[offset]) {
+                matches = false;
+                break;
+              }
+            }
+            if (!matches) continue;
+            const candidate = {
+              field,
+              alias,
+              tokenStart: start,
+              tokenEnd: start + aliasTokens.length - 1,
+              rawStart: tokens[start].start,
+              rawEnd: tokens[start + aliasTokens.length - 1].end,
+              tokenLength: aliasTokens.length
+            };
+            if (!best ||
+                candidate.tokenStart < best.tokenStart ||
+                (candidate.tokenStart === best.tokenStart && candidate.tokenLength > best.tokenLength)) {
+              best = candidate;
+            }
+          }
+        }
+      }
+      return best;
+    }
+
+    function trimVisualSeparators(value) {
+      return String(value || '')
+        .replace(/^[\s\/:;,.()\-–—]+/, '')
+        .replace(/[\s\/:;,.()\-–—]+$/, '')
+        .trim();
+    }
+
+    function stripLeadingVisualLabels(value, field) {
+      let result = trimVisualSeparators(value);
+      for (let pass = 0; pass < 4; pass++) {
+        const match = findVisualLabelMatch(result, field, false);
+        if (!match || match.tokenStart > 0) break;
+        result = trimVisualSeparators(result.slice(match.rawEnd));
+      }
+      return result;
+    }
+
+    function valueAfterVisualLabel(line, match) {
+      let value = stripLeadingVisualLabels(String(line || '').slice(match.rawEnd), match.field);
+      const nextLabel = findVisualLabelMatch(value, null, true);
+      if (nextLabel) value = value.slice(0, nextLabel.rawStart);
+      return trimVisualSeparators(value);
+    }
+
+    function containsVisualLabel(value) {
+      return Boolean(findVisualLabelMatch(value, null, true));
+    }
+
+    const VISUAL_MONTHS = {
+      JAN: 1, JANV: 1, ENE: 1, GEN: 1, IAN: 1, STY: 1, OCA: 1,
+      FEB: 2, FEV: 2, LUT: 2, SUB: 2,
+      MAR: 3, MARZ: 3, MRT: 3,
+      APR: 4, AVR: 4, ABR: 4, KWI: 4, NIS: 4,
+      MAY: 5, MAI: 5, MAG: 5, MEI: 5, MAJ: 5,
+      JUN: 6, JUIN: 6, GIU: 6, IUN: 6, CZE: 6, HAZ: 6,
+      JUL: 7, JUIL: 7, LUG: 7, IUL: 7, LIP: 7, TEM: 7,
+      AUG: 8, AOU: 8, AGO: 8, SIE: 8, AGU: 8,
+      SEP: 9, SEPT: 9, SET: 9, WRZ: 9, EYL: 9,
+      OCT: 10, OKT: 10, OTT: 10, PAZ: 10, EKI: 10,
+      NOV: 11, NOI: 11, LIS: 11, KAS: 11,
+      DEC: 12, DIC: 12, DEZ: 12, GRU: 12, ARA: 12
+    };
+
+    function formatVisualDate(day, month, year, type) {
+      let yyyy = Number(year);
+      const dd = Number(day), mm = Number(month);
+      if (String(year).length === 2) yyyy = resolveTwoDigitYear(yyyy, mm, dd, type);
+      if (!isRealDate(dd, mm, yyyy)) return null;
+      return `${String(dd).padStart(2, '0')}.${String(mm).padStart(2, '0')}.${String(yyyy).padStart(4, '0')}`;
+    }
+
+    function parseVisualDate(value, type = 'birth') {
+      const original = String(value || '').toUpperCase();
+      const cleaned = cleanDateDigits(original);
+      let match = cleaned.match(/\b(\d{1,2})[.\/\-\s]+(\d{1,2})[.\/\-\s]+(\d{2}|\d{4})\b/);
+      if (match) return formatVisualDate(match[1], match[2], match[3], type);
+
+      match = cleaned.match(/\b(\d{4})[.\/\-\s]+(\d{1,2})[.\/\-\s]+(\d{1,2})\b/);
+      if (match) return formatVisualDate(match[3], match[2], match[1], type);
+
+      const normalized = normalizeVisualText(original);
+      match = normalized.match(/\b(\d{1,2})\s+([A-Z]{3,5})\s+(\d{2}|\d{4})\b/);
+      if (match && VISUAL_MONTHS[match[2]]) {
+        return formatVisualDate(match[1], VISUAL_MONTHS[match[2]], match[3], type);
+      }
+      return null;
+    }
+
+    function cleanVisualSex(value) {
+      const normalized = normalizeVisualText(value);
+      if (!normalized) return null;
+      if (/\b(FEMALE|FEMININ|FEMENIN|FEMME|MUJER|FEMMINA|WEIBLICH|VROUW)\b/.test(normalized)) return 'Féminin';
+      if (/\b(MALE|MASCULIN|HOMME|HOMBRE|MASCHIO|MANNLICH|MAN)\b/.test(normalized)) return 'Masculin';
+      const tokens = normalized.split(' ');
+      if (tokens.includes('F') || tokens.includes('W') || tokens.includes('K') || tokens.includes('Z')) return 'Féminin';
+      if (tokens.includes('M') || tokens.includes('H') || tokens.includes('E')) return 'Masculin';
+      return null;
+    }
+
+    function cleanVisualDocumentNumber(value) {
+      const normalized = normalizeVisualText(value);
+      if (!normalized) return null;
+      const tokens = normalized.split(' ').filter(token => /\d/.test(token) && /^[A-Z0-9]{5,20}$/.test(token));
+      let candidate = tokens.sort((a, b) => b.length - a.length)[0] || null;
+      if (!candidate) {
+        const joined = normalized.replace(/\s+/g, '');
+        if (/^(?=.*\d)[A-Z0-9]{5,20}$/.test(joined) && !/^\d{6,8}$/.test(joined)) candidate = joined;
+      }
+      if (!candidate || containsForbiddenWord(candidate)) return null;
+      return candidate;
+    }
+
+    function cleanVisualNationality(value) {
+      const normalized = normalizeVisualText(value);
+      if (!normalized) return null;
+      const excluded = new Set(['SEX', 'DATE', 'BIRTH', 'NAISSANCE', 'NATIONALITY', 'NATIONALITE', 'M', 'F', 'H', 'W']);
+      const iso = normalized.split(' ').find(token => /^[A-Z]{3}$/.test(token) && !excluded.has(token));
+      if (iso) return iso;
+      const clean = String(value || '').toUpperCase()
+        .replace(/[^A-ZÀ-ÖØ-Þ\s\-']/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (clean.length < 2 || clean.length > 35 || clean.split(' ').length > 4 || containsVisualLabel(clean)) return null;
+      return clean;
+    }
+
+    function cleanVisualPlace(value) {
+      let clean = String(value || '')
+        .replace(/\b\d{1,4}[.\/\-]\d{1,2}[.\/\-]\d{1,4}\b/g, ' ')
+        .replace(/[<>()\[\]]/g, ' ')
+        .replace(/[^A-ZÀ-ÖØ-Þa-zà-öø-ÿ0-9\s\-',]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (clean.length < 2 || clean.length > 65 || containsVisualLabel(clean)) return null;
+      return clean.toUpperCase();
+    }
+
+    function cleanVisualAuthority(value) {
+      const clean = String(value || '')
+        .replace(/[<>{}\[\]]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (clean.length < 2 || clean.length > 80 || containsVisualLabel(clean)) return null;
+      return clean.toUpperCase();
+    }
+
+    function cleanVisualFieldValue(field, value) {
+      const raw = trimVisualSeparators(value);
+      if (!raw) return null;
+      if (field === 'birthDate') return parseVisualDate(raw, 'birth');
+      if (field === 'issueDate') return parseVisualDate(raw, 'issue');
+      if (field === 'expirationDate') return parseVisualDate(raw, 'expiry');
+      if (field === 'sex') return cleanVisualSex(raw);
+      if (field === 'nationality') return cleanVisualNationality(raw);
+      if (field === 'documentNumber') return cleanVisualDocumentNumber(raw);
+      if (field === 'placeOfBirth') return cleanVisualPlace(raw);
+      if (field === 'issuedBy') return cleanVisualAuthority(raw);
+      if (field === 'lastName' || field === 'firstName') {
+        if (/\d/.test(raw) || parseVisualDate(raw, 'birth')) return null;
+        const clean = cleanName(raw.replace(/,/g, ' '));
+        if (!clean || clean.length > 70 || clean.split(' ').length > 8 || containsVisualLabel(clean)) return null;
+        return clean;
+      }
+      return null;
+    }
+
+    function inferVisualDocumentFormat(rawText) {
+      const text = normalizeVisualText(rawText);
+      if (/\b(PASSEPORT|PASSPORT|PASAPORTE|PASSAPORTO|REISEPASS)\b/.test(text)) return 'PASSEPORT';
+      if (/\b(PERMIS DE CONDUIRE|DRIVING LICEN[CS]E|PERMISO DE CONDUCIR|PATENTE DI GUIDA|FUHRERSCHEIN|CARTA DE CONDUCAO|RIJBEWIJS|PRAWO JAZDY|PERMIS DE CONDUCERE|VOZACKA DOZVOLA|SURUS BELGESI)\b/.test(text)) return 'PERMIS_FR';
+      if (/\b(TITRE DE SEJOUR|RESIDENCE PERMIT|PERMISO DE RESIDENCIA|PERMESSO DI SOGGIORNO|AUFENTHALTSTITEL|TITULO DE RESIDENCIA|VERBLIJFSVERGUNNING|KARTA POBYTU|PERMIS DE SEDERE|OTURMA IZNI)\b/.test(text)) return 'TITRE_SEJOUR';
+      if (/\b(CARTE NATIONALE|IDENTITY CARD|NATIONAL ID|DOCUMENTO NACIONAL DE IDENTIDAD|CARTA D IDENTITA|PERSONALAUSWEIS|CARTAO DE CIDADAO|IDENTITEITSKAART|DOWOD OSOBISTY|CARTE DE IDENTITATE|OSOBNA ISKAZNICA|LICNA KARTA|KIMLIK KARTI|LETERNJOFTIM)\b/.test(text)) return 'CNI';
+      return selectedDocType !== 'AUTO' ? selectedDocType : null;
+    }
+
+    function unitOcrConfidence(value) {
+      const number = Number(value);
+      if (!Number.isFinite(number)) return 0.78;
+      return Math.max(0, Math.min(1, number > 1 ? number / 100 : number));
+    }
+
+    function normalizeOcrBox(box) {
+      if (!box) return null;
+      const x0 = Number(box.x0 ?? box.left ?? box.x);
+      const y0 = Number(box.y0 ?? box.top ?? box.y);
+      const x1 = Number(box.x1 ?? box.right ?? (Number.isFinite(x0) ? x0 + Number(box.width) : NaN));
+      const y1 = Number(box.y1 ?? box.bottom ?? (Number.isFinite(y0) ? y0 + Number(box.height) : NaN));
+      if (![x0, y0, x1, y1].every(Number.isFinite) || x1 <= x0 || y1 <= y0) return null;
+      return { x0, y0, x1, y1 };
+    }
+
+    function buildVisualRecords(rawText, layoutLines = []) {
+      const positioned = Array.isArray(layoutLines)
+        ? layoutLines.map((line, index) => ({
+            text: String(line?.text || line?.rawValue || '').trim(),
+            confidence: unitOcrConfidence(line?.confidence),
+            bbox: normalizeOcrBox(line?.bbox || line?.boundingBox),
+            index
+          })).filter(line => line.text)
+        : [];
+      if (positioned.length) return positioned;
+      return String(rawText || '').split(/[\r\n]+/)
+        .map((text, index) => ({ text: text.trim(), confidence: 0.78, bbox: null, index }))
+        .filter(line => line.text);
+    }
+
+    function visualSpatialScore(labelRecord, candidateRecord) {
+      const a = labelRecord.bbox, b = candidateRecord.bbox;
+      if (!a || !b) return null;
+      const ah = Math.max(1, a.y1 - a.y0), bh = Math.max(1, b.y1 - b.y0);
+      const centerA = (a.y0 + a.y1) / 2, centerB = (b.y0 + b.y1) / 2;
+      const sameRow = Math.abs(centerA - centerB) <= Math.max(ah, bh) * 0.72;
+      if (sameRow && b.x0 >= a.x0) {
+        const distance = Math.max(0, b.x0 - a.x1) / Math.max(ah, bh);
+        if (distance <= 18) return Math.max(0.72, 0.9 - distance * 0.012);
+      }
+
+      const verticalGap = b.y0 - a.y1;
+      const horizontalOverlap = Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0);
+      const broadlyAligned = horizontalOverlap > -Math.max(ah, bh) * 4;
+      if (verticalGap >= -ah * 0.2 && verticalGap <= Math.max(ah, bh) * 4.2 && broadlyAligned) {
+        return Math.max(0.68, 0.84 - Math.max(0, verticalGap) / Math.max(ah, bh) * 0.035);
+      }
+      return null;
+    }
+
+    function bestVisualFieldCandidate(field, records) {
+      const candidates = [];
+      records.forEach((record, recordIndex) => {
+        const label = findVisualLabelMatch(record.text, field, true);
+        if (!label) return;
+
+        const inlineRaw = valueAfterVisualLabel(record.text, label);
+        const inlineValue = cleanVisualFieldValue(field, inlineRaw);
+        if (inlineValue) {
+          candidates.push({
+            value: inlineValue,
+            confidence: Math.min(0.98, 0.9 + record.confidence * 0.08),
+            source: 'label-inline'
+          });
+        }
+
+        records.forEach((candidateRecord, candidateIndex) => {
+          if (candidateIndex === recordIndex || containsVisualLabel(candidateRecord.text)) return;
+          let association = visualSpatialScore(record, candidateRecord);
+          if (association === null) {
+            const offset = candidateIndex - recordIndex;
+            if (offset <= 0 || offset > 2) return;
+            association = offset === 1 ? 0.82 : 0.7;
+          }
+          const value = cleanVisualFieldValue(field, candidateRecord.text);
+          if (!value) return;
+          const ocrFactor = 0.86 + candidateRecord.confidence * 0.14;
+          candidates.push({
+            value,
+            confidence: Math.min(0.94, association * ocrFactor),
+            source: 'label-nearby'
+          });
+        });
+      });
+
+      candidates.sort((a, b) => b.confidence - a.confidence || String(b.value).length - String(a.value).length);
+      return candidates[0] || null;
+    }
+
+    function extractNumberedPermitFields(rawText, format) {
+      if (format !== 'PERMIS_FR') return { fields: {}, confidence: {} };
+      const fields = {};
+      const confidence = {};
+      const lines = String(rawText || '').split(/[\r\n]+/).map(line => line.trim()).filter(Boolean);
+
+      const setField = (field, value, score = 0.84) => {
+        if (!value || fields[field]) return;
+        fields[field] = value;
+        confidence[field] = score;
+      };
+
+      lines.forEach(line => {
+        let match = line.match(/^1[.\s,:;-]+(.+)$/i);
+        if (match) setField('lastName', cleanVisualFieldValue('lastName', match[1]));
+
+        match = line.match(/^2[.\s,:;-]+(.+)$/i);
+        if (match) setField('firstName', cleanVisualFieldValue('firstName', match[1]));
+
+        match = line.match(/^3[.\s,:;-]+(.+)$/i);
+        if (match) {
+          const date = parseVisualDate(match[1], 'birth');
+          setField('birthDate', date);
+          const withoutDate = match[1]
+            .replace(/\b\d{1,4}[.\/\-\s]+\d{1,2}[.\/\-\s]+\d{1,4}\b/, ' ')
+            .replace(/[()]/g, ' ');
+          setField('placeOfBirth', cleanVisualPlace(withoutDate), 0.78);
+        }
+
+        match = line.match(/^4[aA][.\s,:;-]+(.+)$/);
+        if (match) setField('issueDate', parseVisualDate(match[1], 'issue'));
+        match = line.match(/^4[bB8][.\s,:;-]+(.+)$/);
+        if (match) setField('expirationDate', parseVisualDate(match[1], 'expiry'));
+        match = line.match(/^4[cC][.\s,:;-]+(.+)$/);
+        if (match) setField('issuedBy', cleanVisualAuthority(match[1]), 0.8);
+        match = line.match(/^[5S][.\s,:;-]+(.+)$/);
+        if (match) setField('documentNumber', cleanVisualDocumentNumber(match[1]), 0.86);
+      });
+      return { fields, confidence };
+    }
+
+    function extractContextualBirthPlace(records) {
+      for (let index = 0; index < records.length; index++) {
+        const record = records[index];
+        const label = findVisualLabelMatch(record.text, 'birthDate', true);
+        if (!label) continue;
+        const inline = valueAfterVisualLabel(record.text, label);
+        const withoutDate = inline.replace(/\b(?:\d{1,4}[.\/\-]\d{1,2}[.\/\-]\d{1,4}|\d{1,2}\s+[A-ZÀ-ÖØ-Þ]{3,9}\s+\d{2,4})\b/giu, ' ');
+        let match = withoutDate.match(/(?:^|\s)(?:À|A|AT|IN)\s*[:;,\-]?\s*(.+)$/i);
+        let place = match ? cleanVisualPlace(match[1]) : null;
+        if (place) return place;
+
+        for (let offset = 1; offset <= 2 && index + offset < records.length; offset++) {
+          const next = records[index + offset];
+          if (containsVisualLabel(next.text)) break;
+          match = next.text.match(/^\s*(?:À|A|AT|IN)\s*[:;,\-]?\s*(.+)$/i);
+          place = match ? cleanVisualPlace(match[1]) : null;
+          if (place) return place;
+        }
+      }
+      return null;
+    }
+
+    function extractGenericVisualIdentity(rawText, layoutLines = []) {
+      const records = buildVisualRecords(rawText, layoutLines);
+      const fields = {};
+      const fieldConfidence = {};
+      const format = inferVisualDocumentFormat(rawText);
+
+      Object.keys(VISUAL_FIELD_LABELS).forEach(field => {
+        const candidate = bestVisualFieldCandidate(field, records);
+        if (!candidate || candidate.confidence < 0.62) return;
+        if (field === 'documentNumber') return;
+        fields[field] = candidate.value;
+        fieldConfidence[field] = candidate.confidence;
+      });
+
+      const documentCandidate = bestVisualFieldCandidate('documentNumber', records);
+      let documentNumber = null;
+      if (documentCandidate?.confidence >= 0.72) {
+        documentNumber = documentCandidate.value;
+        fieldConfidence.documentNumber = documentCandidate.confidence;
+      }
+
+      const numbered = extractNumberedPermitFields(rawText, format);
+      Object.entries(numbered.fields).forEach(([field, value]) => {
+        if (!value || fields[field] || (field === 'documentNumber' && documentNumber)) return;
+        if (field === 'documentNumber') documentNumber = value;
+        else fields[field] = value;
+        fieldConfidence[field] = numbered.confidence[field] || 0.78;
+      });
+
+      if (!fields.placeOfBirth) {
+        const contextualPlace = extractContextualBirthPlace(records);
+        if (contextualPlace) {
+          fields.placeOfBirth = contextualPlace;
+          fieldConfidence.placeOfBirth = 0.76;
+        }
+      }
+
+      const reliableCore = ['lastName', 'firstName', 'birthDate', 'documentNumber']
+        .filter(field => (field === 'documentNumber' ? documentNumber : fields[field]) && fieldConfidence[field] >= 0.7);
+      const reliable = Boolean(fields.lastName) && reliableCore.length >= 2;
+      const scores = Object.values(fieldConfidence).filter(Number.isFinite);
+
+      return {
+        format,
+        documentNumber,
+        fields,
+        mrz: null,
+        visual: {
+          found: Object.keys(fields).length + (documentNumber ? 1 : 0) >= 2,
+          reliable,
+          confidence: scores.length ? scores.reduce((sum, value) => sum + value, 0) / scores.length : 0,
+          fieldConfidence
+        }
+      };
     }
 
 
@@ -1325,10 +1846,76 @@
       return String(data.text || '');
     }
 
+    function groupNativeGalleryLines(detectedTexts) {
+      const items = (detectedTexts || []).map(item => ({
+        text: String(item.rawValue || '').trim(),
+        confidence: unitOcrConfidence(item.confidence),
+        bbox: normalizeOcrBox(item.boundingBox)
+      })).filter(item => item.text);
+      const withoutBox = items.filter(item => !item.bbox);
+      const positioned = items.filter(item => item.bbox).sort((a, b) =>
+        a.bbox.y0 - b.bbox.y0 || a.bbox.x0 - b.bbox.x0
+      );
+      const lines = [];
+
+      positioned.forEach(item => {
+        const itemCenter = (item.bbox.y0 + item.bbox.y1) / 2;
+        const itemHeight = item.bbox.y1 - item.bbox.y0;
+        let line = lines.find(candidate => {
+          const center = (candidate.bbox.y0 + candidate.bbox.y1) / 2;
+          const height = candidate.bbox.y1 - candidate.bbox.y0;
+          return Math.abs(center - itemCenter) <= Math.max(height, itemHeight) * 0.62;
+        });
+        if (!line) {
+          line = { items: [], bbox: { ...item.bbox } };
+          lines.push(line);
+        }
+        line.items.push(item);
+        line.bbox.x0 = Math.min(line.bbox.x0, item.bbox.x0);
+        line.bbox.y0 = Math.min(line.bbox.y0, item.bbox.y0);
+        line.bbox.x1 = Math.max(line.bbox.x1, item.bbox.x1);
+        line.bbox.y1 = Math.max(line.bbox.y1, item.bbox.y1);
+      });
+
+      const grouped = lines.map(line => {
+        line.items.sort((a, b) => a.bbox.x0 - b.bbox.x0);
+        return {
+          text: line.items.map(item => item.text).join(' '),
+          confidence: line.items.reduce((sum, item) => sum + item.confidence, 0) / line.items.length,
+          bbox: line.bbox
+        };
+      }).sort((a, b) => a.bbox.y0 - b.bbox.y0 || a.bbox.x0 - b.bbox.x0);
+
+      withoutBox.forEach(item => grouped.push({ text: item.text, confidence: item.confidence, bbox: null }));
+      return grouped;
+    }
+
+    async function recognizeGalleryVisualCanvas(targetCanvas) {
+      if (ocrEngine === 'NATIVE') {
+        const detectedTexts = await textDetector.detect(targetCanvas);
+        const lines = groupNativeGalleryLines(detectedTexts);
+        return { text: lines.map(line => line.text).join('\n'), lines };
+      }
+
+      await setTesseractRecognitionMode('visual');
+      const { data } = await tesseractWorker.recognize(targetCanvas, { rotateAuto: true });
+      const lines = Array.isArray(data.lines) ? data.lines.map(line => ({
+        text: String(line.text || '').trim(),
+        confidence: unitOcrConfidence(line.confidence),
+        bbox: normalizeOcrBox(line.bbox)
+      })).filter(line => line.text) : [];
+      return { text: String(data.text || ''), lines };
+    }
+
     function analyzeGalleryText(rawText, options = {}) {
       const rawData = extractDocumentData(rawText, options);
       const strictData = applyStrictRules(rawData, rawText);
       const fields = strictData.strictFields || {};
+      const baseConfidence = strictData.mrz?.valid ? 0.995 : (strictData.mrz?.found ? 0.64 : 0.38);
+      const fieldConfidence = {};
+      FIELD_ORDER.forEach(label => {
+        if (fields[label]) fieldConfidence[label] = label === 'Type de document' ? Math.max(0.72, baseConfidence) : baseConfidence;
+      });
       const isOptimal = Boolean(
         fields['Type de document'] && fields['N° de titre'] && fields['Nom'] && fields['Date de naissance']
       );
@@ -1336,6 +1923,38 @@
         rawText,
         strictFields: fields,
         mrz: strictData.mrz || null,
+        fieldConfidence,
+        visualIdentityReliable: false,
+        visualConfidence: 0,
+        isOptimal,
+        score: Object.values(fields).filter(Boolean).length
+      };
+    }
+
+    function analyzeVisualIdentity(rawText, layoutLines = []) {
+      const rawData = extractGenericVisualIdentity(rawText, layoutLines);
+      const strictData = applyStrictRules(rawData, rawText);
+      const fields = strictData.strictFields || {};
+      const fieldConfidence = {};
+      const rawConfidence = rawData.visual?.fieldConfidence || {};
+      Object.entries(VISUAL_FIELD_TO_OUTPUT).forEach(([field, label]) => {
+        if (fields[label] && Number.isFinite(rawConfidence[field])) fieldConfidence[label] = rawConfidence[field];
+      });
+      if (fields['Type de document']) fieldConfidence['Type de document'] = 0.84;
+
+      const reliableFields = ['Nom', 'Prénom', 'Date de naissance', 'N° de titre']
+        .filter(label => fields[label] && (fieldConfidence[label] || 0) >= 0.7);
+      const visualIdentityReliable = Boolean(fields['Nom']) && reliableFields.length >= 2 && Boolean(rawData.visual?.reliable);
+      const isOptimal = Boolean(
+        fields['Type de document'] && fields['N° de titre'] && fields['Nom'] && fields['Date de naissance']
+      );
+      return {
+        rawText,
+        strictFields: fields,
+        mrz: null,
+        fieldConfidence,
+        visualIdentityReliable,
+        visualConfidence: rawData.visual?.confidence || 0,
         isOptimal,
         score: Object.values(fields).filter(Boolean).length
       };
@@ -1345,7 +1964,9 @@
       if (!analysis) return -1;
       return (analysis.mrz?.valid ? 100000 : 0) +
         (analysis.mrz?.found ? 5000 : 0) +
+        (analysis.visualIdentityReliable ? 3500 : 0) +
         (analysis.isOptimal ? 2000 : 0) +
+        Math.round((analysis.visualConfidence || 0) * 1000) +
         analysis.score * 100 +
         Math.min(500, String(analysis.rawText || '').replace(/\s/g, '').length);
     }
@@ -1353,9 +1974,19 @@
     function mergeGalleryAnalyses(analyses) {
       const available = analyses.filter(Boolean).sort((a, b) => galleryAnalysisQuality(b) - galleryAnalysisQuality(a));
       const fields = {};
+      const fieldConfidence = {};
       for (const label of FIELD_ORDER) {
-        const source = available.find(item => item.strictFields?.[label]);
-        fields[label] = source ? source.strictFields[label] : null;
+        const candidates = available.filter(item => item.strictFields?.[label]).map(item => ({
+          item,
+          confidence: Number.isFinite(item.fieldConfidence?.[label])
+            ? item.fieldConfidence[label]
+            : (item.mrz?.valid ? 0.99 : (item.mrz?.found ? 0.62 : 0.4))
+        })).sort((a, b) =>
+          b.confidence - a.confidence || galleryAnalysisQuality(b.item) - galleryAnalysisQuality(a.item)
+        );
+        const source = candidates[0] || null;
+        fields[label] = source ? source.item.strictFields[label] : null;
+        if (source) fieldConfidence[label] = source.confidence;
       }
       const validMrz = available.find(item => item.mrz?.valid)?.mrz || null;
       const detectedMrz = validMrz || available.find(item => item.mrz?.found)?.mrz || null;
@@ -1363,10 +1994,15 @@
       const isOptimal = Boolean(
         fields['Type de document'] && fields['N° de titre'] && fields['Nom'] && fields['Date de naissance']
       );
+      const visualIdentityReliable = available.some(item => item.visualIdentityReliable);
+      const visualConfidence = available.reduce((best, item) => Math.max(best, item.visualConfidence || 0), 0);
       return {
         rawText,
         strictFields: fields,
         mrz: detectedMrz,
+        fieldConfidence,
+        visualIdentityReliable,
+        visualConfidence,
         isOptimal,
         score: Object.values(fields).filter(Boolean).length
       };
@@ -1396,19 +2032,38 @@
       const missingCore = !fields['Nom'] || !fields['Prénom'] || !fields['Date de naissance'];
       const needsVisualPass = !best.analysis.mrz?.valid || missingCore || selectedDocType === 'PERMIS_FR';
       let merged = best.analysis;
+      let selectedRotation = best.rotation;
 
       if (needsVisualPass) {
-        if (options.operationId && options.operationId !== galleryOperationId) throw new Error('Analyse remplacée');
-        setGalleryProgress(`Photo ${faceIndex + 1} — lecture des informations visibles`, progressStart + progressSpan * 0.72);
-        const rotated = rotateCanvas(baseCanvas, best.rotation);
-        const visualCanvas = preprocessGalleryCanvas(rotated, 'visual', 2100);
-        const visualRaw = await recognizeGalleryCanvas(visualCanvas, 'visual');
-        if (options.operationId && options.operationId !== galleryOperationId) throw new Error('Analyse remplacée');
-        const visualAnalysis = analyzeGalleryText(visualRaw, { skipMrzParser: true });
-        merged = mergeGalleryAnalyses([best.analysis, visualAnalysis]);
+        const visualRotations = best.analysis.mrz?.valid
+          ? [best.rotation]
+          : [best.rotation, ...rotations.filter(rotation => rotation !== best.rotation)];
+        const visualAttempts = [];
+
+        for (let i = 0; i < visualRotations.length; i++) {
+          if (options.operationId && options.operationId !== galleryOperationId) throw new Error('Analyse remplacée');
+          const rotation = visualRotations[i];
+          const visualProgress = progressStart + progressSpan * (0.66 + 0.28 * i / visualRotations.length);
+          setGalleryProgress(`Photo ${faceIndex + 1} — lecture visuelle (${rotation}°)`, visualProgress);
+          const rotated = rotateCanvas(baseCanvas, rotation);
+          const visualCanvas = preprocessGalleryCanvas(rotated, 'visual', 2100);
+          const visualOcr = await recognizeGalleryVisualCanvas(visualCanvas);
+          if (options.operationId && options.operationId !== galleryOperationId) throw new Error('Analyse remplacée');
+          const analysis = analyzeVisualIdentity(visualOcr.text, visualOcr.lines);
+          visualAttempts.push({ rotation, analysis });
+          if (analysis.visualIdentityReliable && analysis.score >= 3) break;
+        }
+
+        visualAttempts.sort((a, b) => galleryAnalysisQuality(b.analysis) - galleryAnalysisQuality(a.analysis));
+        const bestVisual = visualAttempts[0] || null;
+        if (bestVisual) {
+          selectedRotation = best.analysis.mrz?.valid ? best.rotation : bestVisual.rotation;
+          if (best.analysis.mrz?.found) merged = mergeGalleryAnalyses([best.analysis, bestVisual.analysis]);
+          else merged = bestVisual.analysis;
+        }
       }
 
-      return { ...merged, faceIndex, rotation: best.rotation };
+      return { ...merged, faceIndex, rotation: selectedRotation };
     }
 
     function mergeGalleryFaces(analyses) {
@@ -1424,8 +2079,11 @@
         isOptimal: merged.isOptimal,
         score: merged.score,
         strictFields: merged.strictFields,
+        fieldConfidence: merged.fieldConfidence,
         mrzValidated: Boolean(merged.mrz?.valid) && !conflict,
         mrzDetected: Boolean(merged.mrz?.found),
+        visualIdentityReliable: Boolean(merged.visualIdentityReliable),
+        visualConfidence: merged.visualConfidence || 0,
         galleryConflict: conflict,
         rawText
       };
@@ -1708,6 +2366,7 @@
       const badge = document.getElementById('res-valid-badge');
       if (validatedData.galleryConflict) { badge.className = 'invalid-badge'; badge.innerText = '❌ FACES INCOHÉRENTES'; }
       else if (validatedData.isOptimal && validatedData.mrzValidated) { badge.className = 'valid-badge'; badge.innerText = '✅ MRZ CONTRÔLÉE'; }
+      else if (validatedData.visualIdentityReliable) { badge.className = 'partial-badge'; badge.innerText = '⚠️ OCR VISUEL — À VÉRIFIER'; }
       else if (validatedData.isOptimal) { badge.className = 'partial-badge'; badge.innerText = '⚠️ COMPLET — À VÉRIFIER'; }
       else if (isPartialFallback && validatedData.score > 0) { badge.className = 'partial-badge'; badge.innerText = '⚠️ DONNÉES PARTIELLES'; } 
       else { badge.className = 'invalid-badge'; badge.innerText = '❌ ÉCHEC'; }
