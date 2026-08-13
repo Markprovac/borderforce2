@@ -41,6 +41,8 @@
     .progress-bar { height: 100%; background: #3b82f6; width: 0%; transition: width 0.3s linear; }
 
     .custom-checkbox { accent-color: #3b82f6; width: 1.1rem; height: 1.1rem; cursor: pointer; flex-shrink: 0; }
+    .crop-preview { width: 100%; max-height: 54vh; object-fit: contain; background: #020617; border: 1px solid #334155; border-radius: 0.75rem; touch-action: none; cursor: crosshair; }
+    .crop-action:disabled { opacity: 0.45; cursor: wait; }
   </style>
 </head>
 
@@ -81,6 +83,38 @@
         <li>Appuyez sur le bouton bleu <strong class="text-white">Relaunch</strong> en bas.</li>
       </ol>
       <button onclick="closeFlagsModal()" class="w-full bg-slate-700 hover:bg-slate-600 py-3 rounded-xl font-bold text-sm transition-all">J'ai compris</button>
+    </div>
+  </div>
+
+  <!-- MODAL RECADRAGE GALERIE -->
+  <div id="modal-crop" class="fixed inset-0 z-[110] bg-black/90 backdrop-blur-sm hidden flex-col items-center justify-center px-4 py-5">
+    <div class="bg-slate-900 border border-slate-700 p-4 rounded-2xl max-w-lg w-full shadow-2xl max-h-full overflow-y-auto">
+      <div class="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <h3 class="text-lg font-bold text-blue-300">Recadrer le document</h3>
+          <p id="crop-face-label" class="text-[0.7rem] text-slate-400 mt-1">Photo 1</p>
+        </div>
+        <button onclick="closeCropModal()" class="bg-white/10 hover:bg-white/20 rounded-lg px-3 py-2 text-sm" aria-label="Fermer">✕</button>
+      </div>
+
+      <canvas id="crop-preview" class="crop-preview"></canvas>
+      <p class="text-[0.7rem] text-slate-400 mt-3 leading-relaxed">
+        Tracez un rectangle autour du document. Laissez une petite marge autour de la MRZ.
+      </p>
+
+      <div class="grid grid-cols-2 gap-2 mt-3">
+        <button onclick="rotateCropPreview()" class="bg-white/10 hover:bg-white/20 py-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1">
+          <span class="material-symbols-outlined text-base">rotate_right</span> Tourner
+        </button>
+        <button id="btn-crop-next-face" onclick="changeCropFace()" class="bg-white/10 hover:bg-white/20 py-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1">
+          <span class="material-symbols-outlined text-base">flip</span> Autre face
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 mt-3">
+        <button onclick="closeCropModal()" class="bg-slate-700 hover:bg-slate-600 py-3 rounded-lg font-bold text-sm">Annuler</button>
+        <button id="btn-apply-crop" onclick="applyManualCrop()" class="crop-action bg-blue-600 hover:bg-blue-500 py-3 rounded-lg font-bold text-sm">Analyser la zone</button>
+      </div>
     </div>
   </div>
 
@@ -139,8 +173,9 @@
         </button>
 
         <label id="btn-import-label" class="w-full py-3.5 rounded-xl font-bold text-[0.95rem] transition-all text-center cursor-pointer flex items-center justify-center gap-2 border border-white/10 bg-white/5 hover:bg-white/10">
-          <span class="material-symbols-outlined text-[1.2rem]">image</span> Importer de la galerie
-          <input type="file" id="fileUpload" accept="image/*" class="hidden" />
+          <span class="material-symbols-outlined text-[1.2rem]">image</span>
+          <span>Importer de la galerie <small class="block text-[0.62rem] font-medium text-slate-400">1 photo ou recto + verso</small></span>
+          <input type="file" id="fileUpload" accept="image/*" multiple class="hidden" />
         </label>
       </div>
 
@@ -217,6 +252,9 @@
         <summary class="text-xs text-slate-500 cursor-pointer outline-none">Données brutes non filtrées (Debug)</summary>
         <pre id="res-raw" class="text-[10px] font-mono text-slate-500 mt-3 whitespace-pre-wrap break-all"></pre>
       </details>
+      <button id="btn-crop-retry" onclick="openCropModal()" class="hidden w-full mt-3 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-[1.2rem]">crop</span> Recadrer et réessayer
+      </button>
     </div>
     <div class="px-5 pb-6 w-full max-w-lg mx-auto">
       <button onclick="resetApp()" class="w-full bg-white/10 hover:bg-white/20 py-4 rounded-xl font-bold text-sm transition-all">Nouveau scan</button>
@@ -243,8 +281,23 @@
     const MAX_FRAMES = 8;
     const IDENTITY_TTL_MS = 4 * 60 * 60 * 1000;
     const OCR_MAX_DIMENSION = 2400;
+    const GALLERY_MAX_FILES = 2;
+    const GALLERY_ROTATIONS = [0, 180, 90, 270];
     let scanFrames = [];
     let frameCount = 0;
+    let lastScanWasGallery = false;
+    let lastGalleryCanvases = [];
+    let lastGalleryAnalyses = [];
+    let galleryBestRotations = [];
+    let galleryOperationId = 0;
+    const galleryCropState = {
+      faceIndex: 0,
+      rotation: 0,
+      sourceCanvas: null,
+      selection: { x: 0.04, y: 0.04, width: 0.92, height: 0.92 },
+      dragStart: null,
+      dragging: false
+    };
 
     const FORBIDDEN_WORDS = [
       'TITRE DE SEJOUR', 'CARTE NATIONALE', 'IDENTITE', 'PASSEPORT', 'PASSPORT',
@@ -277,7 +330,7 @@
 
     function cleanName(name) {
       if (!name) return null;
-      let clean = String(name).normalize('NFC').toUpperCase();
+      let clean = String(name).normalize().toUpperCase();
       
       clean = clean.replace(OCR_NOISE, '');
       clean = clean.replace(/^[0-9]+[.\-:]?\s*/g, ''); 
@@ -557,9 +610,9 @@
     // =====================================================================
     // EXTRACTION CHIRURGICALE UNIFIÉE
     // =====================================================================
-    function extractDocumentData(rawText) {
+    function extractDocumentData(rawText, options = {}) {
       if (!rawText) return {};
-      const parsedMrz = mapParsedMrz(parseMrzFromText(rawText), rawText);
+      const parsedMrz = options.skipMrzParser ? null : mapParsedMrz(parseMrzFromText(rawText), rawText);
       if (parsedMrz?.mrz?.valid) return parsedMrz;
 
       let format = parsedMrz?.format || null;
@@ -789,6 +842,7 @@
       canvas = document.getElementById('canvas-mrz');
       ctx = canvas.getContext('2d', { willReadFrequently: true });
       document.getElementById('fileUpload').addEventListener('change', handleFileUpload);
+      setupCropCanvasInteractions();
       purgeExpiredIdentity();
 
       document.querySelectorAll('.doc-btn').forEach(btn => {
@@ -856,7 +910,11 @@
           warningWasm.classList.remove('hidden');
           btnImport.className = "w-full py-3.5 rounded-xl font-bold text-base transition-all text-center cursor-pointer flex items-center justify-center gap-2 border border-blue-500 bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-600/20";
           bar.style.width = '60%';
-          tesseractWorker = await Tesseract.createWorker('eng');
+          try {
+            tesseractWorker = await Tesseract.createWorker(['eng', 'fra']);
+          } catch (e) {
+            tesseractWorker = await Tesseract.createWorker('eng');
+          }
           await tesseractWorker.setParameters({
             tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<',
             preserve_interword_spaces: '1'
@@ -960,6 +1018,10 @@
     // CAMERA & VIDÉO
     // =====================================================================
     async function startCamera() {
+      lastScanWasGallery = false;
+      lastGalleryCanvases = [];
+      lastGalleryAnalyses = [];
+      galleryBestRotations = [];
       switchView('scanning'); 
       isScanning = true; 
       scanFrames = [];
@@ -1083,51 +1145,508 @@
     // =====================================================================
     // UPLOAD PHOTO GALERIE
     // =====================================================================
-    function handleFileUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      event.target.value = '';
-      switchView('loading'); document.getElementById('load-status').innerText = "Extraction chirurgicale en cours..."; 
-      
-      const img = new Image();
-      const objectUrl = URL.createObjectURL(file);
-      img.onload = async () => {
+    function setGalleryProgress(message, percent) {
+      document.getElementById('load-status').innerText = message;
+      document.getElementById('load-progress').style.width = `${Math.max(0, Math.min(100, percent))}%`;
+    }
+
+    function sourceToCanvas(imageSource, maxDimension = OCR_MAX_DIMENSION) {
+      const dimensions = getSourceDimensions(imageSource);
+      if (!dimensions.width || !dimensions.height) throw new Error('Dimensions de photo invalides');
+      const scale = Math.min(1, maxDimension / Math.max(dimensions.width, dimensions.height));
+      const output = document.createElement('canvas');
+      output.width = Math.max(1, Math.round(dimensions.width * scale));
+      output.height = Math.max(1, Math.round(dimensions.height * scale));
+      output.getContext('2d', { willReadFrequently: true })
+        .drawImage(imageSource, 0, 0, dimensions.width, dimensions.height, 0, 0, output.width, output.height);
+      return output;
+    }
+
+    async function fileToCanvas(file) {
+      if ('createImageBitmap' in window) {
         try {
-          const rawText = await extractTextData(img);
-          const rawData = extractDocumentData(rawText);
-          const strictData = applyStrictRules(rawData, rawText);
-          const isOptimal = Boolean(
-            strictData.strictFields['Type de document'] &&
-            strictData.strictFields['N° de titre'] &&
-            strictData.strictFields['Nom'] &&
-            strictData.strictFields['Date de naissance']
-          );
-          const score = Object.values(strictData.strictFields).filter(Boolean).length;
-          showResult({
-            isOptimal,
-            score,
-            strictFields: strictData.strictFields,
-            mrzValidated: Boolean(strictData.mrz?.valid),
-            mrzDetected: Boolean(strictData.mrz?.found)
-          }, rawText, !isOptimal);
-        } catch (e) {
-          showResult({ isOptimal: false, score: 0, strictFields: {}, mrzValidated: false }, "Erreur OCR : " + e.message, false);
-        } finally {
+          const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+          try { return sourceToCanvas(bitmap); }
+          finally { bitmap.close?.(); }
+        } catch (e) { }
+      }
+
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+        const objectUrl = URL.createObjectURL(file);
+        image.onload = () => {
+          try { resolve(sourceToCanvas(image)); }
+          catch (e) { reject(e); }
+          finally { URL.revokeObjectURL(objectUrl); }
+        };
+        image.onerror = () => {
           URL.revokeObjectURL(objectUrl);
+          reject(new Error(`Image illisible : ${file.name || 'photo'}`));
+        };
+        image.src = objectUrl;
+      });
+    }
+
+    function rotateCanvas(source, degrees) {
+      const normalized = ((Number(degrees) % 360) + 360) % 360;
+      if (normalized === 0) return source;
+      const output = document.createElement('canvas');
+      const swapSides = normalized === 90 || normalized === 270;
+      output.width = swapSides ? source.height : source.width;
+      output.height = swapSides ? source.width : source.height;
+      const outputCtx = output.getContext('2d', { willReadFrequently: true });
+      outputCtx.translate(output.width / 2, output.height / 2);
+      outputCtx.rotate(normalized * Math.PI / 180);
+      outputCtx.drawImage(source, -source.width / 2, -source.height / 2);
+      return output;
+    }
+
+    function extractCanvasRegion(source, region, maxDimension = null) {
+      const x = Math.max(0, Math.min(1, Number(region.x) || 0));
+      const y = Math.max(0, Math.min(1, Number(region.y) || 0));
+      const width = Math.max(0.01, Math.min(1 - x, Number(region.width) || 1));
+      const height = Math.max(0.01, Math.min(1 - y, Number(region.height) || 1));
+      const sx = Math.round(x * source.width);
+      const sy = Math.round(y * source.height);
+      const sw = Math.max(1, Math.round(width * source.width));
+      const sh = Math.max(1, Math.round(height * source.height));
+      const scale = maxDimension ? Math.min(1, maxDimension / Math.max(sw, sh)) : 1;
+      const output = document.createElement('canvas');
+      output.width = Math.max(1, Math.round(sw * scale));
+      output.height = Math.max(1, Math.round(sh * scale));
+      output.getContext('2d', { willReadFrequently: true })
+        .drawImage(source, sx, sy, sw, sh, 0, 0, output.width, output.height);
+      return output;
+    }
+
+    function calculateOtsuThreshold(imageData) {
+      const histogram = new Uint32Array(256);
+      const pixels = imageData.data;
+      const total = pixels.length / 4;
+      let weightedTotal = 0;
+      for (let i = 0; i < pixels.length; i += 4) {
+        const gray = Math.round(0.299 * pixels[i] + 0.587 * pixels[i + 1] + 0.114 * pixels[i + 2]);
+        histogram[gray]++;
+        weightedTotal += gray;
+      }
+
+      let backgroundWeight = 0;
+      let backgroundSum = 0;
+      let bestVariance = -1;
+      let threshold = 128;
+      for (let value = 0; value < 256; value++) {
+        backgroundWeight += histogram[value];
+        if (!backgroundWeight) continue;
+        const foregroundWeight = total - backgroundWeight;
+        if (!foregroundWeight) break;
+        backgroundSum += value * histogram[value];
+        const backgroundMean = backgroundSum / backgroundWeight;
+        const foregroundMean = (weightedTotal - backgroundSum) / foregroundWeight;
+        const variance = backgroundWeight * foregroundWeight * Math.pow(backgroundMean - foregroundMean, 2);
+        if (variance > bestVariance) {
+          bestVariance = variance;
+          threshold = value;
         }
+      }
+      return threshold;
+    }
+
+    function preprocessGalleryCanvas(source, mode = 'contrast', maxDimension = 1800) {
+      const scale = Math.min(1, maxDimension / Math.max(source.width, source.height));
+      const output = document.createElement('canvas');
+      output.width = Math.max(1, Math.round(source.width * scale));
+      output.height = Math.max(1, Math.round(source.height * scale));
+      const outputCtx = output.getContext('2d', { willReadFrequently: true });
+      outputCtx.filter = mode === 'visual' ? 'grayscale(1) contrast(1.25)' : 'grayscale(1) contrast(1.7)';
+      outputCtx.drawImage(source, 0, 0, output.width, output.height);
+      outputCtx.filter = 'none';
+
+      if (mode === 'threshold') {
+        const imageData = outputCtx.getImageData(0, 0, output.width, output.height);
+        const threshold = calculateOtsuThreshold(imageData);
+        for (let i = 0; i < imageData.data.length; i += 4) {
+          const gray = Math.round(0.299 * imageData.data[i] + 0.587 * imageData.data[i + 1] + 0.114 * imageData.data[i + 2]);
+          const value = gray >= threshold ? 255 : 0;
+          imageData.data[i] = value;
+          imageData.data[i + 1] = value;
+          imageData.data[i + 2] = value;
+          imageData.data[i + 3] = 255;
+        }
+        outputCtx.putImageData(imageData, 0, 0);
+      }
+      return output;
+    }
+
+    function stackCanvasVariants(variants) {
+      const separator = 18;
+      const width = Math.max(...variants.map(item => item.width));
+      const height = variants.reduce((sum, item) => sum + item.height, 0) + separator * (variants.length - 1);
+      const output = document.createElement('canvas');
+      output.width = width;
+      output.height = height;
+      const outputCtx = output.getContext('2d');
+      outputCtx.fillStyle = '#ffffff';
+      outputCtx.fillRect(0, 0, width, height);
+      let y = 0;
+      variants.forEach(item => {
+        const x = Math.round((width - item.width) / 2);
+        outputCtx.drawImage(item, x, y);
+        y += item.height + separator;
+      });
+      return output;
+    }
+
+    function createGalleryMrzSheet(source) {
+      const lower = extractCanvasRegion(source, { x: 0, y: 0.42, width: 1, height: 0.58 }, 1800);
+      const middle = extractCanvasRegion(source, { x: 0.05, y: 0.18, width: 0.9, height: 0.62 }, 1800);
+      return stackCanvasVariants([
+        preprocessGalleryCanvas(lower, 'contrast'),
+        preprocessGalleryCanvas(lower, 'threshold'),
+        preprocessGalleryCanvas(middle, 'contrast')
+      ]);
+    }
+
+    async function setTesseractRecognitionMode(mode) {
+      if (!tesseractWorker) return;
+      const psm = mode === 'mrz'
+        ? (Tesseract.PSM?.SINGLE_BLOCK || '6')
+        : (Tesseract.PSM?.AUTO || '3');
+      await tesseractWorker.setParameters({
+        tessedit_char_whitelist: mode === 'mrz' ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<' : '',
+        tessedit_pageseg_mode: psm,
+        preserve_interword_spaces: '1'
+      });
+    }
+
+    async function recognizeGalleryCanvas(targetCanvas, mode) {
+      if (ocrEngine === 'NATIVE') return detectNativeText(targetCanvas);
+      await setTesseractRecognitionMode(mode);
+      const { data } = await tesseractWorker.recognize(targetCanvas);
+      return String(data.text || '');
+    }
+
+    function analyzeGalleryText(rawText, options = {}) {
+      const rawData = extractDocumentData(rawText, options);
+      const strictData = applyStrictRules(rawData, rawText);
+      const fields = strictData.strictFields || {};
+      const isOptimal = Boolean(
+        fields['Type de document'] && fields['N° de titre'] && fields['Nom'] && fields['Date de naissance']
+      );
+      return {
+        rawText,
+        strictFields: fields,
+        mrz: strictData.mrz || null,
+        isOptimal,
+        score: Object.values(fields).filter(Boolean).length
       };
-      img.onerror = () => {
-        URL.revokeObjectURL(objectUrl);
-        showResult({ isOptimal: false, score: 0, strictFields: {}, mrzValidated: false }, "Image illisible", false);
+    }
+
+    function galleryAnalysisQuality(analysis) {
+      if (!analysis) return -1;
+      return (analysis.mrz?.valid ? 100000 : 0) +
+        (analysis.mrz?.found ? 5000 : 0) +
+        (analysis.isOptimal ? 2000 : 0) +
+        analysis.score * 100 +
+        Math.min(500, String(analysis.rawText || '').replace(/\s/g, '').length);
+    }
+
+    function mergeGalleryAnalyses(analyses) {
+      const available = analyses.filter(Boolean).sort((a, b) => galleryAnalysisQuality(b) - galleryAnalysisQuality(a));
+      const fields = {};
+      for (const label of FIELD_ORDER) {
+        const source = available.find(item => item.strictFields?.[label]);
+        fields[label] = source ? source.strictFields[label] : null;
+      }
+      const validMrz = available.find(item => item.mrz?.valid)?.mrz || null;
+      const detectedMrz = validMrz || available.find(item => item.mrz?.found)?.mrz || null;
+      const rawText = available.map(item => item.rawText).filter(Boolean).join('\n');
+      const isOptimal = Boolean(
+        fields['Type de document'] && fields['N° de titre'] && fields['Nom'] && fields['Date de naissance']
+      );
+      return {
+        rawText,
+        strictFields: fields,
+        mrz: detectedMrz,
+        isOptimal,
+        score: Object.values(fields).filter(Boolean).length
       };
-      img.src = objectUrl;
+    }
+
+    async function analyzeGalleryCanvas(baseCanvas, faceIndex, options = {}) {
+      const rotations = options.rotations || GALLERY_ROTATIONS;
+      const progressStart = Number.isFinite(options.progressStart) ? options.progressStart : 10;
+      const progressSpan = Number.isFinite(options.progressSpan) ? options.progressSpan : 80;
+      const attempts = [];
+      for (let i = 0; i < rotations.length; i++) {
+        if (options.operationId && options.operationId !== galleryOperationId) throw new Error('Analyse remplacée');
+        const rotation = rotations[i];
+        const rotated = rotateCanvas(baseCanvas, rotation);
+        const progress = progressStart + (progressSpan * 0.62 * i / rotations.length);
+        setGalleryProgress(`Photo ${faceIndex + 1} — recherche MRZ (${rotation}°)`, progress);
+        const quickRaw = await recognizeGalleryCanvas(createGalleryMrzSheet(rotated), 'mrz');
+        if (options.operationId && options.operationId !== galleryOperationId) throw new Error('Analyse remplacée');
+        const analysis = analyzeGalleryText(quickRaw);
+        attempts.push({ rotation, analysis });
+        if (analysis.mrz?.valid) break;
+      }
+
+      attempts.sort((a, b) => galleryAnalysisQuality(b.analysis) - galleryAnalysisQuality(a.analysis));
+      const best = attempts[0] || { rotation: 0, analysis: analyzeGalleryText('') };
+      const fields = best.analysis.strictFields || {};
+      const missingCore = !fields['Nom'] || !fields['Prénom'] || !fields['Date de naissance'];
+      const needsVisualPass = !best.analysis.mrz?.valid || missingCore || selectedDocType === 'PERMIS_FR';
+      let merged = best.analysis;
+
+      if (needsVisualPass) {
+        if (options.operationId && options.operationId !== galleryOperationId) throw new Error('Analyse remplacée');
+        setGalleryProgress(`Photo ${faceIndex + 1} — lecture des informations visibles`, progressStart + progressSpan * 0.72);
+        const rotated = rotateCanvas(baseCanvas, best.rotation);
+        const visualCanvas = preprocessGalleryCanvas(rotated, 'visual', 2100);
+        const visualRaw = await recognizeGalleryCanvas(visualCanvas, 'visual');
+        if (options.operationId && options.operationId !== galleryOperationId) throw new Error('Analyse remplacée');
+        const visualAnalysis = analyzeGalleryText(visualRaw, { skipMrzParser: true });
+        merged = mergeGalleryAnalyses([best.analysis, visualAnalysis]);
+      }
+
+      return { ...merged, faceIndex, rotation: best.rotation };
+    }
+
+    function mergeGalleryFaces(analyses) {
+      const merged = mergeGalleryAnalyses(analyses);
+      const validNumbers = analyses
+        .filter(item => item?.mrz?.valid && item.strictFields?.['N° de titre'])
+        .map(item => item.strictFields['N° de titre']);
+      const conflict = new Set(validNumbers).size > 1;
+      const rawText = analyses.map((item, index) =>
+        item ? `--- PHOTO ${index + 1} ---\n${item.rawText || ''}` : ''
+      ).filter(Boolean).join('\n');
+      return {
+        isOptimal: merged.isOptimal,
+        score: merged.score,
+        strictFields: merged.strictFields,
+        mrzValidated: Boolean(merged.mrz?.valid) && !conflict,
+        mrzDetected: Boolean(merged.mrz?.found),
+        galleryConflict: conflict,
+        rawText
+      };
+    }
+
+    async function restoreDefaultTesseractMode() {
+      if (ocrEngine !== 'TESSERACT' || !tesseractWorker) return;
+      try { await setTesseractRecognitionMode('mrz'); } catch (e) { }
+    }
+
+    async function handleFileUpload(event) {
+      const allFiles = Array.from(event.target.files || []);
+      event.target.value = '';
+      const files = allFiles.filter(file => !file.type || file.type.startsWith('image/')).slice(0, GALLERY_MAX_FILES);
+      if (!files.length) return;
+      if (allFiles.length > GALLERY_MAX_FILES) showToast('⚠️ Deux photos maximum : recto et verso');
+
+      const operationId = ++galleryOperationId;
+      lastScanWasGallery = true;
+      lastGalleryCanvases = [];
+      lastGalleryAnalyses = [];
+      galleryBestRotations = [];
+      switchView('loading');
+      setGalleryProgress('Préparation des photos...', 5);
+
+      try {
+        for (let index = 0; index < files.length; index++) {
+          setGalleryProgress(`Préparation de la photo ${index + 1}/${files.length}`, 7 + index * 6);
+          lastGalleryCanvases.push(await fileToCanvas(files[index]));
+        }
+
+        for (let index = 0; index < lastGalleryCanvases.length; index++) {
+          const progressStart = 18 + index * (72 / lastGalleryCanvases.length);
+          const progressSpan = 72 / lastGalleryCanvases.length;
+          const analysis = await analyzeGalleryCanvas(lastGalleryCanvases[index], index, {
+            operationId,
+            progressStart,
+            progressSpan
+          });
+          lastGalleryAnalyses[index] = analysis;
+          galleryBestRotations[index] = analysis.rotation;
+        }
+
+        setGalleryProgress('Consolidation recto-verso...', 96);
+        const result = mergeGalleryFaces(lastGalleryAnalyses);
+        showResult(result, result.rawText, !result.isOptimal);
+      } catch (e) {
+        if (operationId !== galleryOperationId) return;
+        showResult({ isOptimal: false, score: 0, strictFields: {}, mrzValidated: false }, `Erreur Galerie : ${e.message}`, false);
+      } finally {
+        await restoreDefaultTesseractMode();
+      }
+    }
+
+    function defaultCropSelection() {
+      return { x: 0.04, y: 0.04, width: 0.92, height: 0.92 };
+    }
+
+    function updateCropWorkingCanvas(resetSelection = true) {
+      const base = lastGalleryCanvases[galleryCropState.faceIndex];
+      if (!base) return;
+      galleryCropState.sourceCanvas = rotateCanvas(base, galleryCropState.rotation);
+      if (resetSelection) galleryCropState.selection = defaultCropSelection();
+      document.getElementById('crop-face-label').innerText =
+        `Photo ${galleryCropState.faceIndex + 1}/${lastGalleryCanvases.length} — rotation ${galleryCropState.rotation}°`;
+      document.getElementById('btn-crop-next-face').classList.toggle('hidden', lastGalleryCanvases.length < 2);
+      renderCropPreview();
+    }
+
+    function renderCropPreview() {
+      const source = galleryCropState.sourceCanvas;
+      const preview = document.getElementById('crop-preview');
+      if (!source || !preview) return;
+      const scale = Math.min(1, 900 / source.width, 620 / source.height);
+      preview.width = Math.max(1, Math.round(source.width * scale));
+      preview.height = Math.max(1, Math.round(source.height * scale));
+      const previewCtx = preview.getContext('2d');
+      previewCtx.drawImage(source, 0, 0, preview.width, preview.height);
+
+      const selection = galleryCropState.selection;
+      const x = selection.x * preview.width;
+      const y = selection.y * preview.height;
+      const width = selection.width * preview.width;
+      const height = selection.height * preview.height;
+      previewCtx.fillStyle = 'rgba(0, 0, 0, 0.58)';
+      previewCtx.fillRect(0, 0, preview.width, preview.height);
+      previewCtx.save();
+      previewCtx.beginPath();
+      previewCtx.rect(x, y, width, height);
+      previewCtx.clip();
+      previewCtx.drawImage(source, 0, 0, preview.width, preview.height);
+      previewCtx.restore();
+      previewCtx.strokeStyle = '#60a5fa';
+      previewCtx.lineWidth = Math.max(2, preview.width / 250);
+      previewCtx.strokeRect(x, y, width, height);
+    }
+
+    function cropPointerPosition(event) {
+      const preview = document.getElementById('crop-preview');
+      const rect = preview.getBoundingClientRect();
+      return {
+        x: Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)),
+        y: Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height))
+      };
+    }
+
+    function setupCropCanvasInteractions() {
+      const preview = document.getElementById('crop-preview');
+      preview.addEventListener('pointerdown', event => {
+        event.preventDefault();
+        galleryCropState.dragging = true;
+        galleryCropState.dragStart = cropPointerPosition(event);
+        galleryCropState.selection = { ...galleryCropState.dragStart, width: 0, height: 0 };
+        try { preview.setPointerCapture(event.pointerId); } catch (e) { }
+        renderCropPreview();
+      });
+      preview.addEventListener('pointermove', event => {
+        if (!galleryCropState.dragging || !galleryCropState.dragStart) return;
+        event.preventDefault();
+        const current = cropPointerPosition(event);
+        const start = galleryCropState.dragStart;
+        galleryCropState.selection = {
+          x: Math.min(start.x, current.x),
+          y: Math.min(start.y, current.y),
+          width: Math.abs(current.x - start.x),
+          height: Math.abs(current.y - start.y)
+        };
+        renderCropPreview();
+      });
+      const finish = event => {
+        if (!galleryCropState.dragging) return;
+        galleryCropState.dragging = false;
+        galleryCropState.dragStart = null;
+        try { preview.releasePointerCapture(event.pointerId); } catch (e) { }
+        if (galleryCropState.selection.width < 0.05 || galleryCropState.selection.height < 0.05) {
+          galleryCropState.selection = defaultCropSelection();
+        }
+        renderCropPreview();
+      };
+      preview.addEventListener('pointerup', finish);
+      preview.addEventListener('pointercancel', finish);
+    }
+
+    function openCropModal(faceIndex = 0) {
+      if (!lastGalleryCanvases.length) {
+        showToast('⚠️ Aucune photo de galerie disponible');
+        return;
+      }
+      galleryCropState.faceIndex = Math.max(0, Math.min(lastGalleryCanvases.length - 1, Number(faceIndex) || 0));
+      galleryCropState.rotation = galleryBestRotations[galleryCropState.faceIndex] || 0;
+      galleryCropState.dragging = false;
+      updateCropWorkingCanvas(true);
+      document.getElementById('modal-crop').classList.replace('hidden', 'flex');
+    }
+
+    function closeCropModal() {
+      document.getElementById('modal-crop').classList.replace('flex', 'hidden');
+      galleryCropState.dragging = false;
+    }
+
+    function rotateCropPreview() {
+      galleryCropState.rotation = (galleryCropState.rotation + 90) % 360;
+      updateCropWorkingCanvas(true);
+    }
+
+    function changeCropFace() {
+      if (lastGalleryCanvases.length < 2) return;
+      galleryCropState.faceIndex = (galleryCropState.faceIndex + 1) % lastGalleryCanvases.length;
+      galleryCropState.rotation = galleryBestRotations[galleryCropState.faceIndex] || 0;
+      updateCropWorkingCanvas(true);
+    }
+
+    async function applyManualCrop() {
+      const source = galleryCropState.sourceCanvas;
+      const selection = galleryCropState.selection;
+      if (!source || selection.width < 0.05 || selection.height < 0.05) {
+        showToast('⚠️ Tracez une zone plus grande');
+        return;
+      }
+
+      const button = document.getElementById('btn-apply-crop');
+      button.disabled = true;
+      const faceIndex = galleryCropState.faceIndex;
+      const baseRotation = galleryCropState.rotation;
+      const cropped = extractCanvasRegion(source, selection, OCR_MAX_DIMENSION);
+      const operationId = ++galleryOperationId;
+      closeCropModal();
+      lastScanWasGallery = true;
+      switchView('loading');
+      setGalleryProgress('Analyse de la zone recadrée...', 10);
+
+      try {
+        const analysis = await analyzeGalleryCanvas(cropped, faceIndex, {
+          operationId,
+          progressStart: 15,
+          progressSpan: 78
+        });
+        lastGalleryAnalyses[faceIndex] = analysis;
+        galleryBestRotations[faceIndex] = (baseRotation + analysis.rotation) % 360;
+        const result = mergeGalleryFaces(lastGalleryAnalyses);
+        showResult(result, result.rawText, !result.isOptimal);
+      } catch (e) {
+        if (operationId !== galleryOperationId) return;
+        showResult({ isOptimal: false, score: 0, strictFields: {}, mrzValidated: false }, `Erreur de recadrage : ${e.message}`, false);
+      } finally {
+        button.disabled = false;
+        await restoreDefaultTesseractMode();
+      }
     }
 
     // =====================================================================
     // AFFICHAGE ET EXPORT (CASES À COCHER)
     // =====================================================================
     function resetApp() {
+      galleryOperationId++;
+      lastScanWasGallery = false;
+      lastGalleryCanvases = [];
+      lastGalleryAnalyses = [];
+      galleryBestRotations = [];
       document.getElementById('fileUpload').value = '';
+      closeCropModal();
       switchView('ready');
     }
 
@@ -1187,7 +1706,8 @@
     function showResult(validatedData, rawText, isPartialFallback) {
       switchView('result'); finalFields = validatedData.strictFields || {};
       const badge = document.getElementById('res-valid-badge');
-      if (validatedData.isOptimal && validatedData.mrzValidated) { badge.className = 'valid-badge'; badge.innerText = '✅ MRZ CONTRÔLÉE'; }
+      if (validatedData.galleryConflict) { badge.className = 'invalid-badge'; badge.innerText = '❌ FACES INCOHÉRENTES'; }
+      else if (validatedData.isOptimal && validatedData.mrzValidated) { badge.className = 'valid-badge'; badge.innerText = '✅ MRZ CONTRÔLÉE'; }
       else if (validatedData.isOptimal) { badge.className = 'partial-badge'; badge.innerText = '⚠️ COMPLET — À VÉRIFIER'; }
       else if (isPartialFallback && validatedData.score > 0) { badge.className = 'partial-badge'; badge.innerText = '⚠️ DONNÉES PARTIELLES'; } 
       else { badge.className = 'invalid-badge'; badge.innerText = '❌ ÉCHEC'; }
@@ -1203,6 +1723,10 @@
         });
       }
       if (!hasDisplayedData) container.innerHTML = `<p class="text-sm text-red-400 text-center py-4 font-bold">Aucune donnée valide trouvée.</p>`;
+      const cropRetry = document.getElementById('btn-crop-retry');
+      const galleryNeedsRetry = lastScanWasGallery &&
+        (!validatedData.isOptimal || !validatedData.mrzValidated || validatedData.galleryConflict);
+      cropRetry.classList.toggle('hidden', !galleryNeedsRetry);
     }
 
     function getSelectedText() {
