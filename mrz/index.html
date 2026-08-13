@@ -659,11 +659,33 @@
       if (match) return formatVisualDate(match[3], match[2], match[1], type);
 
       const normalized = normalizeVisualText(original);
+      // Documents bilingues : « 18 БЕР/MAR 85 » devient souvent
+      // « 18 BEP MAR 85 » avec le modèle latin. On privilégie alors le mois
+      // international placé juste avant l'année.
+      match = normalized.match(/\b(\d{1,2})\s+[A-Z]{3,8}\s+([A-Z]{3,5})\s+(\d{2}|\d{4})\b/);
+      if (match && VISUAL_MONTHS[match[2]]) {
+        return formatVisualDate(match[1], VISUAL_MONTHS[match[2]], match[3], type);
+      }
       match = normalized.match(/\b(\d{1,2})\s+([A-Z]{3,5})\s+(\d{2}|\d{4})\b/);
       if (match && VISUAL_MONTHS[match[2]]) {
         return formatVisualDate(match[1], VISUAL_MONTHS[match[2]], match[3], type);
       }
       return null;
+    }
+
+    const VISUAL_VALUE_NOISE = /\b(?:COUNTRY|CODE|DOCUMENT|PASSPORT|PASSEPORT|NATIONALITY|NATIONALITE|DATE|BIRTH|PLACE|HOLDER|SIGNATURE|AUTHORITY|RECORD|SURNAME|GIVEN|NAMES?|TYPE|PROPERTY|CITIZEN|TRAVELLING|ABROAD|MINISTER|FOREIGN|AFFAIRS)\b/i;
+    const VISUAL_ISO_NOISE = new Set(['THE', 'FOR', 'AND', 'ALL', 'WITH', 'FROM', 'NOT', 'SEX', 'NOM', 'PAR', 'SUR']);
+
+    function preferTranslatedVisualValue(value) {
+      const original = String(value || '').trim();
+      const parts = original.split(/[\/|]/).map(part => trimVisualSeparators(part)).filter(Boolean);
+      if (parts.length < 2) return original;
+      for (let index = parts.length - 1; index >= 0; index--) {
+        const part = parts[index];
+        if (!part || VISUAL_VALUE_NOISE.test(normalizeVisualText(part)) || containsVisualLabel(part)) continue;
+        return part;
+      }
+      return original;
     }
 
     function cleanVisualSex(value) {
@@ -691,27 +713,32 @@
     }
 
     function cleanVisualNationality(value) {
-      const normalized = normalizeVisualText(value);
+      const preferred = preferTranslatedVisualValue(value);
+      const normalized = normalizeVisualText(preferred);
       if (!normalized) return null;
       const excluded = new Set(['SEX', 'DATE', 'BIRTH', 'NAISSANCE', 'NATIONALITY', 'NATIONALITE', 'M', 'F', 'H', 'W']);
-      const iso = normalized.split(' ').find(token => /^[A-Z]{3}$/.test(token) && !excluded.has(token));
+      const iso = normalized.split(' ').find(token =>
+        /^[A-Z]{3}$/.test(token) && !excluded.has(token) && !VISUAL_ISO_NOISE.has(token)
+      );
       if (iso) return iso;
-      const clean = String(value || '').toUpperCase()
+      const clean = String(preferred || '').toUpperCase()
         .replace(/[^A-ZÀ-ÖØ-Þ\s\-']/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
-      if (clean.length < 2 || clean.length > 35 || clean.split(' ').length > 4 || containsVisualLabel(clean)) return null;
+      if (clean.length < 2 || clean.length > 35 || clean.split(' ').length > 4 ||
+          containsVisualLabel(clean) || VISUAL_VALUE_NOISE.test(clean) || VISUAL_ISO_NOISE.has(clean)) return null;
       return clean;
     }
 
     function cleanVisualPlace(value) {
-      let clean = String(value || '')
+      let clean = String(preferTranslatedVisualValue(value) || '')
         .replace(/\b\d{1,4}[.\/\-]\d{1,2}[.\/\-]\d{1,4}\b/g, ' ')
         .replace(/[<>()\[\]]/g, ' ')
         .replace(/[^A-ZÀ-ÖØ-Þa-zà-öø-ÿ0-9\s\-',]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
-      if (clean.length < 2 || clean.length > 65 || containsVisualLabel(clean)) return null;
+      if (clean.length < 2 || clean.length > 65 || clean.split(' ').length > 6 ||
+          /^[A-Z]{3}$/.test(clean.toUpperCase()) || containsVisualLabel(clean) || VISUAL_VALUE_NOISE.test(clean)) return null;
       return clean.toUpperCase();
     }
 
@@ -720,7 +747,8 @@
         .replace(/[<>{}\[\]]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
-      if (clean.length < 2 || clean.length > 80 || containsVisualLabel(clean)) return null;
+      if (clean.length < 2 || clean.length > 80 || containsVisualLabel(clean) ||
+          VISUAL_VALUE_NOISE.test(clean) || parseVisualDate(clean, 'issue')) return null;
       return clean.toUpperCase();
     }
 
@@ -736,9 +764,10 @@
       if (field === 'placeOfBirth') return cleanVisualPlace(raw);
       if (field === 'issuedBy') return cleanVisualAuthority(raw);
       if (field === 'lastName' || field === 'firstName') {
-        if (/\d/.test(raw) || parseVisualDate(raw, 'birth')) return null;
-        const clean = cleanName(raw.replace(/,/g, ' '));
-        if (!clean || clean.length > 70 || clean.split(' ').length > 8 || containsVisualLabel(clean)) return null;
+        const preferred = preferTranslatedVisualValue(raw);
+        if (/\d/.test(preferred) || parseVisualDate(preferred, 'birth') || VISUAL_VALUE_NOISE.test(normalizeVisualText(preferred))) return null;
+        const clean = cleanName(preferred.replace(/,/g, ' '));
+        if (!clean || clean.length > 48 || clean.split(' ').length > 4 || containsVisualLabel(clean)) return null;
         return clean;
       }
       return null;
@@ -983,6 +1012,181 @@
         .replace(/[^A-Z0-9<]/g, '');
     }
 
+    const MRZ_WEIGHTS = [7, 3, 1];
+    const MRZ_NUMERIC_CORRECTIONS = { O: '0', Q: '0', D: '0', I: '1', L: '1', Z: '2', S: '5', B: '8', G: '6' };
+
+    function mrzNumeric(value) {
+      return String(value || '').toUpperCase().split('').map(char =>
+        /\d/.test(char) ? char : (MRZ_NUMERIC_CORRECTIONS[char] || char)
+      ).join('');
+    }
+
+    function mrzCharacterValue(char) {
+      if (char === '<') return 0;
+      if (/\d/.test(char)) return Number(char);
+      if (/^[A-Z]$/.test(char)) return char.charCodeAt(0) - 55;
+      return NaN;
+    }
+
+    function mrzCheckDigitMatches(value, checkDigit) {
+      const digit = mrzNumeric(checkDigit);
+      if (!/^[0-9<]$/.test(digit)) return false;
+      let total = 0;
+      for (let index = 0; index < value.length; index++) {
+        const characterValue = mrzCharacterValue(value[index]);
+        if (!Number.isFinite(characterValue)) return false;
+        total += characterValue * MRZ_WEIGHTS[index % MRZ_WEIGHTS.length];
+      }
+      return total % 10 === (digit === '<' ? 0 : Number(digit));
+    }
+
+    function plausibleMrzDate(value) {
+      const digits = mrzNumeric(value);
+      if (!/^\d{6}$/.test(digits)) return false;
+      const month = Number(digits.slice(2, 4));
+      const day = Number(digits.slice(4, 6));
+      return month >= 1 && month <= 12 && day >= 1 && day <= 31;
+    }
+
+    function decodeNoisyTd3Names(firstLine, stateCode) {
+      const normalized = normalizeMrzLine(firstLine);
+      const stateIndex = normalized.indexOf(stateCode);
+      if (!normalized.startsWith('P') || stateIndex < 1 || stateIndex > 7) return null;
+      const payload = normalized.slice(stateIndex + 3);
+      if (payload.length < 6) return null;
+
+      // Les chevrons de remplissage sont parfois lus K/C/E/X. On localise
+      // d'abord la longue zone finale, puis on retire au plus trois faux
+      // chevrons placés juste devant elle.
+      const fillerRuns = [...payload.matchAll(/<{2,}/g)];
+      const fillerMatch = fillerRuns[fillerRuns.length - 1] || null;
+      let meaningfulEnd = fillerMatch ? fillerMatch.index : payload.length;
+      let removed = 0;
+      while (meaningfulEnd > 0 && removed < 3 && /[KCEX]/.test(payload[meaningfulEnd - 1])) {
+        meaningfulEnd--;
+        removed++;
+      }
+      const core = payload.slice(0, meaningfulEnd);
+      if (core.length < 6) return null;
+
+      const separatorChars = /^[<KCEX]+$/;
+      const candidates = [];
+      for (let start = 2; start <= core.length - 4; start++) {
+        for (let length = 2; length <= 3 && start + length <= core.length - 2; length++) {
+          const separator = core.slice(start, start + length);
+          if (!separatorChars.test(separator)) continue;
+          const surname = core.slice(0, start).replace(/<+/g, ' ').trim();
+          const givenNames = core.slice(start + length).replace(/<+/g, ' ').trim();
+          if (!/^[A-Z][A-Z ]{1,39}$/.test(surname) || !/^[A-Z][A-Z ]{1,39}$/.test(givenNames)) continue;
+          const confidence = separator === '<<' ? 0.99 : (separator.includes('<') ? 0.91 : 0.84);
+          const score = confidence * 100 + length * 2 - Math.max(0, surname.length - 24) - Math.max(0, givenNames.length - 30);
+          candidates.push({ surname, givenNames, confidence, score });
+        }
+      }
+      candidates.sort((a, b) => b.score - a.score);
+      return candidates[0] || null;
+    }
+
+    function parseTolerantTd3FromText(rawText) {
+      const entries = String(rawText || '').split(/[\r\n]+/)
+        .map((raw, index) => ({ raw, normalized: normalizeMrzLine(raw), index }))
+        .filter(entry => entry.normalized);
+      const secondLineWindows = [];
+
+      entries.forEach(entry => {
+        if (entry.normalized.length < 44 || entry.normalized.length > 54) return;
+        for (let offset = 0; offset <= entry.normalized.length - 44; offset++) {
+          secondLineWindows.push({
+            line: entry.normalized.slice(offset, offset + 44),
+            index: entry.index,
+            offset
+          });
+        }
+      });
+
+      let best = null;
+      for (const window of secondLineWindows) {
+        const line = window.line;
+        const documentNumberField = line.slice(0, 9);
+        const nationality = line.slice(10, 13);
+        const birthDate = mrzNumeric(line.slice(13, 19));
+        const sex = line[20];
+        const expirationDate = mrzNumeric(line.slice(21, 27));
+        if (!/^[A-Z<]{3}$/.test(nationality) || !plausibleMrzDate(birthDate) ||
+            !/^[MF<]$/.test(sex) || !plausibleMrzDate(expirationDate)) continue;
+
+        const checks = {
+          documentNumber: mrzCheckDigitMatches(documentNumberField, line[9]),
+          birthDate: mrzCheckDigitMatches(birthDate, line[19]),
+          expirationDate: mrzCheckDigitMatches(expirationDate, line[27]),
+          optionalData: mrzCheckDigitMatches(line.slice(28, 42), line[42]),
+          composite: mrzCheckDigitMatches(line.slice(0, 10) + line.slice(13, 20) + line.slice(21, 43), line[43])
+        };
+        const validCheckCount = Object.values(checks).filter(Boolean).length;
+        if (!checks.documentNumber && validCheckCount < 2) continue;
+
+        const firstCandidates = entries.filter(entry =>
+          entry.index < window.index && window.index - entry.index <= 14 &&
+          entry.normalized.startsWith('P') && entry.normalized.length >= 12
+        );
+        let decodedNames = null;
+        let firstLine = null;
+        for (let index = firstCandidates.length - 1; index >= 0; index--) {
+          const candidate = firstCandidates[index];
+          const decoded = decodeNoisyTd3Names(candidate.normalized, nationality);
+          if (decoded) {
+            decodedNames = decoded;
+            firstLine = candidate.normalized;
+            break;
+          }
+        }
+
+        const issuingState = nationality;
+        const valid = Object.values(checks).every(Boolean);
+        const details = [
+          ['Document number check digit', checks.documentNumber],
+          ['Birth date check digit', checks.birthDate],
+          ['Expiration date check digit', checks.expirationDate],
+          ['Optional data check digit', checks.optionalData],
+          ['Composite check digit', checks.composite]
+        ].map(([label, detailValid]) => ({ label, valid: detailValid, autocorrect: [] }));
+        const result = {
+          format: 'TD3',
+          valid,
+          documentNumber: documentNumberField.replace(/<+$/g, ''),
+          fields: {
+            documentNumber: documentNumberField.replace(/<+$/g, ''),
+            lastName: decodedNames?.surname || null,
+            firstName: decodedNames?.givenNames || null,
+            birthDate,
+            expirationDate,
+            sex,
+            nationality: nationality.replace(/</g, ''),
+            issuingState
+          },
+          fieldConfidence: {
+            documentNumber: checks.documentNumber ? 0.99 : 0.7,
+            lastName: decodedNames?.confidence || 0,
+            firstName: decodedNames?.confidence || 0,
+            birthDate: checks.birthDate ? 0.99 : 0.72,
+            expirationDate: checks.expirationDate ? 0.99 : 0.72,
+            sex: 0.94,
+            nationality: 0.94
+          },
+          details,
+          tolerant: true
+        };
+        const canonicalName = decodedNames
+          ? `${decodedNames.surname}<<${decodedNames.givenNames.replace(/\s+/g, '<')}`
+          : '';
+        const canonicalFirstLine = (`P<${issuingState}${canonicalName}`).padEnd(44, '<').slice(0, 44);
+        const score = scoreParsedMrz(result) + validCheckCount * 8 + (decodedNames ? 18 : 0);
+        const parsed = { result, lines: [canonicalFirstLine, line], score };
+        if (!best || parsed.score > best.score) best = parsed;
+      }
+      return best;
+    }
+
     function looksLikeMrzGroup(lines) {
       if (!Array.isArray(lines) || lines.length === 0) return false;
       const lineLength = lines[0].length;
@@ -1073,19 +1277,22 @@
     }
 
     function parseMrzFromText(rawText) {
-      if (typeof mrzParse !== 'function') return null;
       let best = null;
-      for (const lines of collectMrzCandidates(rawText)) {
-        try {
-          const result = mrzParse(lines, { autocorrect: true });
-          const importantCount = ['documentNumber', 'lastName', 'birthDate']
-            .filter(key => result.fields && result.fields[key]).length;
-          if (!result.valid && importantCount < 2) continue;
-          const score = scoreParsedMrz(result);
-          if (!best || score > best.score) best = { result, lines, score };
-          if (result.valid) break;
-        } catch (e) { }
+      if (typeof mrzParse === 'function') {
+        for (const lines of collectMrzCandidates(rawText)) {
+          try {
+            const result = mrzParse(lines, { autocorrect: true });
+            const importantCount = ['documentNumber', 'lastName', 'birthDate']
+              .filter(key => result.fields && result.fields[key]).length;
+            if (!result.valid && importantCount < 2) continue;
+            const score = scoreParsedMrz(result);
+            if (!best || score > best.score) best = { result, lines, score };
+            if (result.valid) break;
+          } catch (e) { }
+        }
       }
+      const tolerantTd3 = parseTolerantTd3FromText(rawText);
+      if (tolerantTd3 && (!best || tolerantTd3.score > best.score)) best = tolerantTd3;
       return best;
     }
 
@@ -1106,6 +1313,7 @@
       const format = inferFormatFromParsedMrz(result, rawText);
       const nationality = parsed.nationality ||
         ((result.format === 'FRENCH_NATIONAL_ID' || (format === 'CNI' && parsed.issuingState === 'FRA')) ? 'FRA' : null);
+      const confidence = result.fieldConfidence || {};
       return {
         format,
         documentNumber: result.documentNumber || parsed.documentNumber || null,
@@ -1123,7 +1331,17 @@
           valid: Boolean(result.valid),
           format: result.format,
           lines: candidate.lines,
-          corrected: (result.details || []).some(detail => (detail.autocorrect || []).length > 0)
+          corrected: (result.details || []).some(detail => (detail.autocorrect || []).length > 0),
+          tolerant: Boolean(result.tolerant),
+          fieldConfidence: {
+            'N° de titre': confidence.documentNumber,
+            'Nom': confidence.lastName,
+            'Prénom': confidence.firstName,
+            'Date de naissance': confidence.birthDate,
+            'Date de péremption': confidence.expirationDate,
+            'Sexe': confidence.sex,
+            'Nationalité': confidence.nationality
+          }
         }
       };
     }
@@ -1914,7 +2132,11 @@
       const baseConfidence = strictData.mrz?.valid ? 0.995 : (strictData.mrz?.found ? 0.64 : 0.38);
       const fieldConfidence = {};
       FIELD_ORDER.forEach(label => {
-        if (fields[label]) fieldConfidence[label] = label === 'Type de document' ? Math.max(0.72, baseConfidence) : baseConfidence;
+        if (!fields[label]) return;
+        const mrzFieldConfidence = strictData.mrz?.fieldConfidence?.[label];
+        fieldConfidence[label] = label === 'Type de document'
+          ? Math.max(0.72, baseConfidence)
+          : (Number.isFinite(mrzFieldConfidence) && mrzFieldConfidence > 0 ? mrzFieldConfidence : baseConfidence);
       });
       const isOptimal = Boolean(
         fields['Type de document'] && fields['N° de titre'] && fields['Nom'] && fields['Date de naissance']
@@ -2366,6 +2588,7 @@
       const badge = document.getElementById('res-valid-badge');
       if (validatedData.galleryConflict) { badge.className = 'invalid-badge'; badge.innerText = '❌ FACES INCOHÉRENTES'; }
       else if (validatedData.isOptimal && validatedData.mrzValidated) { badge.className = 'valid-badge'; badge.innerText = '✅ MRZ CONTRÔLÉE'; }
+      else if (validatedData.mrzDetected) { badge.className = 'partial-badge'; badge.innerText = '⚠️ MRZ LUE — CONTRÔLES ÉCHOUÉS'; }
       else if (validatedData.visualIdentityReliable) { badge.className = 'partial-badge'; badge.innerText = '⚠️ OCR VISUEL — À VÉRIFIER'; }
       else if (validatedData.isOptimal) { badge.className = 'partial-badge'; badge.innerText = '⚠️ COMPLET — À VÉRIFIER'; }
       else if (isPartialFallback && validatedData.score > 0) { badge.className = 'partial-badge'; badge.innerText = '⚠️ DONNÉES PARTIELLES'; } 
